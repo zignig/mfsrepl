@@ -3,6 +3,7 @@ package mfs
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 
@@ -56,6 +57,25 @@ func (fs *IPfsfs) Req(path string, arg string) (resp *http.Response, err error) 
 		return resp, err
 	}
 	return resp, err
+}
+
+type Stat struct {
+	Hash           string
+	Size           int
+	CumulativeSize int
+	Blocks         int
+	Type           string
+}
+
+func (fs *IPfsfs) mfs(path string) (s *Stat) {
+	htr, _ := fs.Req("files/stat", "/")
+	data, _ := ioutil.ReadAll(htr.Body)
+	merr := json.Unmarshal(data, &s)
+	if merr != nil {
+		fmt.Println("FAIL", merr)
+	}
+	fmt.Println(s)
+	return s
 }
 
 //Stat : Check if the file system exist
