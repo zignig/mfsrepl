@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"github.com/weaveworks/mesh"
+
+	"mfs"
 )
 
 type stringset map[string]struct{}
@@ -40,6 +42,7 @@ func (ss stringset) slice() []string {
 
 func main() {
 	fmt.Println("Blorp Blorp")
+	_ = mfs.NewIPfsfs("")
 	peers := &stringset{}
 	var (
 		meshListen = flag.String("mesh", net.JoinHostPort("0.0.0.0", strconv.Itoa(mesh.Port)), "mesh listen address")
