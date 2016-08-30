@@ -13,7 +13,7 @@ import (
 type state struct {
 	mtx  sync.RWMutex
 	set  map[mesh.PeerName]int
-	data string
+	data map[mesh.PeerName]string
 	self mesh.PeerName
 }
 
@@ -26,6 +26,7 @@ var _ mesh.GossipData = &state{}
 func newState(self mesh.PeerName) *state {
 	return &state{
 		set:  map[mesh.PeerName]int{},
+		data: map[mesh.PeerName]string{},
 		self: self,
 	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 func TestBasic(t *testing.T) {
-	j := NewIPfsfs("")
+	j := NewIPfsfs()
 	fmt.Println(j)
 	fmt.Println(j.Stat())
 	j.mfs("share")

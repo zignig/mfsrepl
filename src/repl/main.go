@@ -42,7 +42,7 @@ func (ss stringset) slice() []string {
 
 func main() {
 	fmt.Println("Blorp Blorp")
-	_ = mfs.NewIPfsfs("")
+	_ = mfs.NewIPfsfs()
 	peers := &stringset{}
 	var (
 		meshListen = flag.String("mesh", net.JoinHostPort("0.0.0.0", strconv.Itoa(mesh.Port)), "mesh listen address")
@@ -84,7 +84,6 @@ func main() {
 	gossip := router.NewGossip(*channel, peer)
 	peer.register(gossip)
 	go info(router, logger, peer)
-	go bump(peer)
 	func() {
 		logger.Printf("mesh router starting (%s)", *meshListen)
 		router.Start()
@@ -103,17 +102,6 @@ func main() {
 		errs <- fmt.Errorf("%s", <-c)
 	}()
 	logger.Print(<-errs)
-}
-
-func bump(p *peer) {
-	c := time.Tick(1 * time.Minute)
-	for {
-		select {
-		case <-c:
-			p.incr()
-			fmt.Println(p.st)
-		}
-	}
 }
 
 func info(r *mesh.Router, logger *log.Logger, peer *peer) {
