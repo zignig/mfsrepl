@@ -38,8 +38,8 @@ type Stat struct {
 	Type           string
 }
 
-func (fs *IPfsfs) mfs(path string) (s *Stat) {
-	htr, _ := fs.Req("files/stat", "/")
+func (fs *IPfsfs) Mfs(path string) (s *Stat) {
+	htr, _ := fs.Req("files/stat", "/"+path)
 	data, _ := ioutil.ReadAll(htr.Body)
 	merr := json.Unmarshal(data, &s)
 	if merr != nil {

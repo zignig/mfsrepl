@@ -32,10 +32,7 @@ func newState(self mesh.PeerName) *state {
 func (st *state) get() (result string) {
 	st.mtx.RLock()
 	defer st.mtx.RUnlock()
-	for _, v := range st.set {
-		result += v
-	}
-	return result
+	return st.set[st.self]
 }
 
 func (st *state) insert(value string) (complete *state) {
