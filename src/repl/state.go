@@ -118,9 +118,7 @@ func (st *state) mergeComplete(set map[mesh.PeerName]string) (complete mesh.Goss
 	defer st.mtx.Unlock()
 
 	for peer, v := range set {
-		if v != st.set[peer] {
-			st.set[peer] = v
-		}
+		st.set[peer] = v
 	}
 
 	return &state{

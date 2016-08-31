@@ -5,7 +5,7 @@ import (
 
 	"bytes"
 	"encoding/gob"
-
+	"fmt"
 	"github.com/weaveworks/mesh"
 )
 
@@ -66,6 +66,7 @@ func (p *peer) Insert(value string) (result string) {
 	p.actions <- func() {
 		defer close(c)
 		st := p.st.insert(value)
+		fmt.Println(st)
 		if p.send != nil {
 			p.send.GossipBroadcast(st)
 		} else {
