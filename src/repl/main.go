@@ -75,7 +75,7 @@ func main() {
 		ProtocolMinVersion: mesh.ProtocolMinVersion,
 		Password:           []byte(*password),
 		ConnLimit:          64,
-		PeerDiscovery:      true,
+		PeerDiscovery:      false,
 		TrustedSubnets:     []*net.IPNet{},
 	}, name, *nickname, mesh.NullOverlay{}, logger) //log.New(ioutil.Discard, "", 0))
 
@@ -132,9 +132,8 @@ func info(r *mesh.Router, logger *log.Logger, peer *peer) {
 		select {
 		case <-c:
 			for i, j := range r.Peers.Descriptions() {
-				logger.Printf(" %v , %v ", i, j)
+				logger.Printf(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, peer.st.set[j.Name])
 			}
-			fmt.Println(peer.st)
 		}
 	}
 }

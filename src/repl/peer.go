@@ -85,7 +85,7 @@ func (p *peer) stop() {
 // Return a copy of our complete state.
 func (p *peer) Gossip() (complete mesh.GossipData) {
 	complete = p.st.copy()
-	p.logger.Printf("Gossip => complete %v", complete.(*state).set)
+	//p.logger.Printf("Gossip => complete %v", complete.(*state).set)
 	return complete
 }
 
@@ -97,13 +97,12 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 		return nil, err
 	}
 
-	p.logger.Printf("incoming %v", set)
 	delta = p.st.mergeDelta(set)
-	if delta == nil {
-		p.logger.Printf("OnGossip %v => delta %v", set, delta)
-	} else {
-		p.logger.Printf("OnGossip %v => delta %v", set, delta.(*state).set)
-	}
+	//if delta == nil {
+	//	p.logger.Printf("OnGossip %v => delta %v", set, delta)
+	//} else {
+	//	p.logger.Printf("OnGossip %v => delta %v", set, delta.(*state).set)
+	//}
 	return delta, nil
 }
 
@@ -111,17 +110,16 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 // Return the state information that was modified.
 func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.GossipData, err error) {
 	var set map[mesh.PeerName]string
-	p.logger.Printf(" broadcast , %s", src)
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 	received = p.st.mergeReceived(set)
-	if received == nil {
-		p.logger.Printf("OnGossipBroadcast %s %v => delta %v", src, set, received)
-	} else {
-		p.logger.Printf("OnGossipBroadcast %s %v => delta %v", src, set, received.(*state).set)
-	}
+	//if received == nil {
+	//	p.logger.Printf("OnGossipBroadcast %s %v => delta %v", src, set, received)
+	//} else {
+	//		p.logger.Printf("OnGossipBroadcast %s %v => delta %v", src, set, received.(*state).set)
+	//	}
 	return received, nil
 }
 
