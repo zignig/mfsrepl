@@ -83,6 +83,7 @@ func main() {
 	peer := newPeer(name, logger)
 	gossip := router.NewGossip(*channel, peer)
 	peer.register(gossip)
+	peer.Insert("this is data")
 	go info(router, logger, peer)
 	func() {
 		logger.Printf("mesh router starting (%s)", *meshListen)
