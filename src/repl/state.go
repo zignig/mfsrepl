@@ -92,7 +92,7 @@ func (st *state) mergeDelta(set map[mesh.PeerName]string) (delta mesh.GossipData
 	defer st.mtx.Unlock()
 
 	for peer, v := range set {
-		if v != st.set[peer] {
+		if _, ok := st.set[peer]; ok {
 			delete(set, peer) // requirement: it's not part of a delta
 			continue
 		}
