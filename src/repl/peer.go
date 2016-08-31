@@ -66,7 +66,7 @@ func (p *peer) Insert(value string) (result string) {
 	p.actions <- func() {
 		defer close(c)
 		st := p.st.insert(value)
-		fmt.Println(st)
+		p.logger.Printf("insert data %v", st)
 		if p.send != nil {
 			p.send.GossipBroadcast(st)
 		} else {

@@ -77,10 +77,6 @@ func (st *state) mergeReceived(set map[mesh.PeerName]string) (received mesh.Goss
 	defer st.mtx.Unlock()
 
 	for peer, v := range set {
-		if v != st.set[peer] {
-			delete(set, peer) // optimization: make the forwarded data smaller
-			continue
-		}
 		st.set[peer] = v
 	}
 

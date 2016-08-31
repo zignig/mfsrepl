@@ -42,7 +42,6 @@ func (ss stringset) slice() []string {
 
 func main() {
 	fmt.Println("Blorp Blorp")
-	r := mfs.NewIPfsfs()
 	peers := &stringset{}
 	var (
 		meshListen = flag.String("mesh", net.JoinHostPort("0.0.0.0", strconv.Itoa(mesh.Port)), "mesh listen address")
@@ -83,7 +82,15 @@ func main() {
 	peer := newPeer(name, logger)
 	gossip := router.NewGossip(*channel, peer)
 	peer.register(gossip)
+	r := mfs.NewIPfsfs()
+	if r.Stat() {
+		val := r.Mfs("share")
+		peer.Insert(val.Hash)
+	} else {
+		logger.Printf("No ipfs node")
+	}
 	go info(router, logger, peer)
+	go insert(logger, peer)
 	func() {
 		logger.Printf("mesh router starting (%s)", *meshListen)
 		router.Start()
@@ -92,13 +99,6 @@ func main() {
 		logger.Printf("mesh router stopping")
 		router.Stop()
 	}()
-
-	if r.Stat() {
-		val := r.Mfs("share")
-		peer.Insert(val.Hash)
-	} else {
-		logger.Printf("No ipfs node")
-	}
 
 	router.ConnectionMaker.InitiateConnections(peers.slice(), true)
 
@@ -111,6 +111,21 @@ func main() {
 	logger.Print(<-errs)
 }
 
+func insert(logger *log.Logger, peer *peer) {
+	c := time.Tick(1 * time.Minute)
+	for {
+		select {
+		case <-c:
+			r := mfs.NewIPfsfs()
+			if r.Stat() {
+				val := r.Mfs("share")
+				peer.Insert(val.Hash)
+			} else {
+				logger.Printf("No ipfs node")
+			}
+		}
+	}
+}
 func info(r *mesh.Router, logger *log.Logger, peer *peer) {
 	c := time.Tick(20 * time.Second)
 	for {
