@@ -92,12 +92,12 @@ func (p *peer) Gossip() (complete mesh.GossipData) {
 // Merge the gossiped data represented by buf into our state.
 // Return the state information that was modified.
 func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
-	p.logger.Printf("gossip ")
 	var set map[mesh.PeerName]string
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		return nil, err
 	}
 
+	p.logger.Printf("incoming %v", set)
 	delta = p.st.mergeDelta(set)
 	if delta == nil {
 		p.logger.Printf("OnGossip %v => delta %v", set, delta)

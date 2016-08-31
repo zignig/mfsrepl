@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	//"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -77,7 +77,7 @@ func main() {
 		ConnLimit:          64,
 		PeerDiscovery:      true,
 		TrustedSubnets:     []*net.IPNet{},
-	}, name, *nickname, mesh.NullOverlay{}, log.New(ioutil.Discard, "", 0))
+	}, name, *nickname, mesh.NullOverlay{}, logger) //log.New(ioutil.Discard, "", 0))
 
 	peer := newPeer(name, logger)
 	gossip := router.NewGossip(*channel, peer)
