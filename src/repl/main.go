@@ -83,12 +83,6 @@ func main() {
 	peer := newPeer(name, logger)
 	gossip := router.NewGossip(*channel, peer)
 	peer.register(gossip)
-	if r.Stat() {
-		val := r.Mfs("share")
-		peer.Insert(val.Hash)
-	} else {
-		logger.Printf("No ipfs node")
-	}
 	go info(router, logger, peer)
 	func() {
 		logger.Printf("mesh router starting (%s)", *meshListen)
@@ -98,6 +92,13 @@ func main() {
 		logger.Printf("mesh router stopping")
 		router.Stop()
 	}()
+
+	if r.Stat() {
+		val := r.Mfs("share")
+		peer.Insert(val.Hash)
+	} else {
+		logger.Printf("No ipfs node")
+	}
 
 	router.ConnectionMaker.InitiateConnections(peers.slice(), true)
 
