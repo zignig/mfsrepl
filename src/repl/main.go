@@ -47,7 +47,7 @@ func main() {
 		meshListen = flag.String("mesh", net.JoinHostPort("0.0.0.0", strconv.Itoa(mesh.Port)), "mesh listen address")
 		nickname   = flag.String("nickname", mustHostname(), "peer nickname")
 		channel    = flag.String("channel", "default", "gossip channel name")
-		config     = flag.String("config", "./config.toml", "config file path")
+		config     = flag.String("config", "./repl.toml", "config file path")
 	)
 	flag.Var(peers, "peer", "initial peer (may be repeated)")
 	flag.Parse()
