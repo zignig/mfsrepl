@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/BurntSushi/toml",
+			"repository": "https://github.com/BurntSushi/toml",
+			"revision": "99064174e013895bbd9b025c31100bd1d9b590ca",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/weaveworks/mesh",
 			"repository": "https://github.com/weaveworks/mesh",
 			"revision": "115e1393da1c50fee0e418bcd772d3a85ca4e7ee",
