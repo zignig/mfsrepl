@@ -15,6 +15,7 @@ type Remote struct {
 
 type Config struct {
 	Peers    []string
+	PeerID   string
 	Password string
 	Remotes  map[string]*Remote
 }
@@ -22,9 +23,9 @@ type Config struct {
 func NewConfig() (c *Config) {
 	c = &Config{
 		Peers:   make([]string, 0),
+		PeerID:  genMac(),
 		Remotes: make(map[string]*Remote),
 	}
-	c.Peers = append(c.Peers, "example.com")
 	c.Remotes["bob"] = &Remote{}
 	return c
 }

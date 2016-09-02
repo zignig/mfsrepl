@@ -45,9 +45,7 @@ func main() {
 	peers := &stringset{}
 	var (
 		meshListen = flag.String("mesh", net.JoinHostPort("0.0.0.0", strconv.Itoa(mesh.Port)), "mesh listen address")
-		hwaddr     = flag.String("hwaddr", "", "MAC address, i.e. mesh peer ID")
 		nickname   = flag.String("nickname", mustHostname(), "peer nickname")
-		password   = flag.String("password", "", "password (optional)")
 		channel    = flag.String("channel", "default", "gossip channel name")
 		config     = flag.String("config", "./config.toml", "config file path")
 	)
@@ -66,16 +64,16 @@ func main() {
 		logger.Fatalf("mesh address: %s: %v", *meshListen, err)
 	}
 
-	name, err := mesh.PeerNameFromString(genMac())
+	name, err := mesh.PeerNameFromString(c.PeerID)
 	if err != nil {
-		logger.Fatalf("%s: %v", *hwaddr, err)
+		logger.Fatalf("%v", err)
 	}
 
 	router := mesh.NewRouter(mesh.Config{
 		Host:               host,
 		Port:               port,
 		ProtocolMinVersion: mesh.ProtocolMinVersion,
-		Password:           []byte(*password),
+		Password:           []byte(c.Password),
 		ConnLimit:          64,
 		PeerDiscovery:      false,
 		TrustedSubnets:     []*net.IPNet{},
@@ -102,7 +100,10 @@ func main() {
 		router.Stop()
 	}()
 
-	router.ConnectionMaker.InitiateConnections(peers.slice(), true)
+	//router.ConnectionMaker.InitiateConnections(peers.slice(), true)
+	if len(c.Peers) > 0 {
+		router.ConnectionMaker.InitiateConnections(c.Peers, true)
+	}
 
 	errs := make(chan error)
 	go func() {
