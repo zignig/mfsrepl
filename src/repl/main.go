@@ -41,7 +41,7 @@ func (ss stringset) slice() []string {
 }
 
 func main() {
-	fmt.Println("Blorp Blorp")
+	fmt.Println("MFS replicator")
 	peers := &stringset{}
 	var (
 		meshListen = flag.String("mesh", net.JoinHostPort("0.0.0.0", strconv.Itoa(mesh.Port)), "mesh listen address")
@@ -49,10 +49,12 @@ func main() {
 		nickname   = flag.String("nickname", mustHostname(), "peer nickname")
 		password   = flag.String("password", "", "password (optional)")
 		channel    = flag.String("channel", "default", "gossip channel name")
+		config     = flag.String("config", "./config.toml", "config file path")
 	)
 	flag.Var(peers, "peer", "initial peer (may be repeated)")
 	flag.Parse()
-
+	c := LoadConfig(*config)
+	fmt.Println(c)
 	logger := log.New(os.Stderr, *nickname+"> ", log.LstdFlags)
 
 	host, portStr, err := net.SplitHostPort(*meshListen)
