@@ -13,30 +13,59 @@ type Remote struct {
 	Replicate bool
 }
 
-type Config struct {
-	Peers    []string
-	PeerID   string
-	Password string
-	Remotes  map[string]*Remote
+type Share struct {
+	Path string
 }
 
-func NewConfig() (c *Config) {
+type Config struct {
+	Listen    string
+	Nickname  string
+	Discovery bool
+	Peers     []string
+	Shares    map[string]*Share
+	PeerID    string
+	Password  string
+	Remotes   map[string]*Remote
+	Channel   string
+}
+
+func NewConfig(peer, password string) (c *Config) {
 	c = &Config{
-		Peers:   make([]string, 0),
-		PeerID:  genMac(),
-		Remotes: make(map[string]*Remote),
+		Peers:    make([]string, 0),
+		PeerID:   genMac(),
+		Remotes:  make(map[string]*Remote),
+		Shares:   make(map[string]*Share),
+		Listen:   "0.0.0.0:6783",
+		Channel:  "default",
+		Nickname: mustHostname(),
+	}
+	if peer != "" {
+		c.Peers = append(c.Peers, peer)
+	}
+	if password != "" {
+		c.Password = password
 	}
 	c.Remotes["bob"] = &Remote{}
+	c.Shares["share"] = &Share{Path: "/share"}
 	return c
 }
 
-func LoadConfig(path string) (c *Config) {
+func LoadConfig(path, peer, password string) (c *Config) {
 	if _, err := toml.DecodeFile(path, &c); err != nil {
 		fmt.Println("NO CONFIG, generate empty")
-		c = NewConfig()
+		c = NewConfig(peer, password)
 		c.Save(path)
 	}
 	return
+}
+
+func (c *Config) Print() {
+	buf := new(bytes.Buffer)
+	err := toml.NewEncoder(buf).Encode(c)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(buf.String())
 }
 
 func (c *Config) Save(path string) {
