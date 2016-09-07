@@ -13,6 +13,8 @@ import (
 	"mfs"
 )
 
+var logger *log.Logger
+
 func main() {
 	fmt.Println("MFS replicator")
 	var (
@@ -24,8 +26,8 @@ func main() {
 	flag.Parse()
 
 	config := LoadConfig(*configPath, *peer, *password, *nickname)
-	config.Print()
-	logger := log.New(os.Stderr, config.Nickname+"> ", log.LstdFlags)
+	//config.Print()
+	logger = log.New(os.Stderr, config.Nickname+"> ", log.LstdFlags)
 
 	cluster := NewCluster(config, logger)
 

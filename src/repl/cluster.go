@@ -16,6 +16,7 @@ type Cluster struct {
 	config *Config
 	logger *log.Logger
 	router *mesh.Router
+	peer   *peer
 }
 
 func NewCluster(config *Config, logger *log.Logger) (cl *Cluster) {
@@ -46,7 +47,8 @@ func NewCluster(config *Config, logger *log.Logger) (cl *Cluster) {
 	peer := newPeer(name, logger)
 	gossip := router.NewGossip(config.Channel, peer)
 	peer.register(gossip)
-
+	// bind the peer
+	cl.peer = peer
 	return cl
 }
 
@@ -64,7 +66,7 @@ func (cl *Cluster) Stop() {
 }
 func (cl *Cluster) Peers() {
 	for i, j := range cl.router.Peers.Descriptions() {
-		cl.logger.Printf(" %v , %v [%v] -> %v ", i, j.NickName, j.Name) //, peer.st.set[j.Name])
+		cl.logger.Printf(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
 	}
 }
 

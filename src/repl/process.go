@@ -7,6 +7,7 @@ import (
 
 func Process(cluster *Cluster, share *mfs.Share, interval int) {
 	c := time.Tick(time.Duration(interval) * time.Second)
+	// get the channels from the constructs
 	shareUpdates := share.UpdateChannel()
 	for {
 		select {
