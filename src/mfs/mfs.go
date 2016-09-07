@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-
+	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const (
@@ -15,18 +16,37 @@ const (
 	ipfsHost = "localhost:5001"
 )
 
-//IPfsfs : file system ROfs interface
-type IPfsfs struct {
-	watch map[string]string
+type Update struct {
+	Path    string
+	NewHash string
+	OldHash string
+	Stamp   time.Time
+}
+
+//Share : file system ROfs interface
+type Share struct {
+	Path    string
+	watch   map[string]string
+	paths   map[string]string
+	updates chan Update
+	logger  *log.Logger
 }
 
 func init() {
 	http.DefaultClient.Transport = &http.Transport{DisableKeepAlives: true}
 }
 
-func NewIPfsfs() (fs *IPfsfs) {
-	fs = &IPfsfs{}
+func NewShare(bind map[string]*Share, logger *log.Logger) (fs *Share) {
+	fs = &Share{}
 	fs.watch = make(map[string]string)
+	fs.paths = make(map[string]string)
+	fs.updates = make(chan Update, 50)
+	fs.logger = logger
+	for i, j := range bind {
+		fs.paths[i] = j.Path
+		fs.watch[i] = ""
+	}
+	fmt.Println(fs)
 	return fs
 }
 
@@ -38,19 +58,55 @@ type Stat struct {
 	Type           string
 }
 
-func (fs *IPfsfs) Mfs(path string) (s *Stat) {
+func (fs *Share) UpdateChannel() (c chan Update) {
+	return fs.updates
+}
+
+func (fs *Share) Watch(interval int) {
+	c := time.Tick(time.Duration(interval) * time.Second)
+	for {
+		select {
+		case <-c:
+			fs.logger.Printf("WATCH")
+			fs.CheckChanges()
+		}
+	}
+}
+
+func (fs *Share) CheckChanges() {
+	for i, j := range fs.paths {
+		//fs.logger.Printf("Check changes %v , %v ", i, j)
+		if fs.Stat() {
+			stat := fs.Mfs(j)
+			//fs.logger.Printf("STAT %v", stat)
+			if fs.watch[i] != stat.Hash {
+				update := Update{
+					Path:    i,
+					OldHash: fs.watch[i],
+					NewHash: stat.Hash,
+					Stamp:   time.Now(),
+				}
+				fs.updates <- update
+				fs.watch[i] = stat.Hash
+			}
+
+		}
+	}
+}
+
+func (fs *Share) Mfs(path string) (s *Stat) {
 	htr, _ := fs.Req("files/stat", "/"+path)
 	data, _ := ioutil.ReadAll(htr.Body)
 	merr := json.Unmarshal(data, &s)
 	if merr != nil {
 		fmt.Println("FAIL", merr)
 	}
-	fmt.Println(s)
+	//fmt.Println(s)
 	return s
 }
 
 //Stat : Check if the file system exist
-func (fs *IPfsfs) Stat() (stat bool) {
+func (fs *Share) Stat() (stat bool) {
 	_, err := fs.Req("id", "")
 	if err != nil {
 		return false
@@ -59,7 +115,7 @@ func (fs *IPfsfs) Stat() (stat bool) {
 }
 
 //Req : base request for ipfs access
-func (fs *IPfsfs) Req(path string, arg string) (resp *http.Response, err error) {
+func (fs *Share) Req(path string, arg string) (resp *http.Response, err error) {
 	u := url.URL{}
 	u.Scheme = "http"
 	u.Host = ipfsHost

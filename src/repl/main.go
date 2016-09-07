@@ -19,10 +19,11 @@ func main() {
 		configPath = flag.String("config", "./repl.toml", "config file path")
 		password   = flag.String("password", "", "password for mesh")
 		peer       = flag.String("peer", "", "peer address")
+		nickname   = flag.String("nickname", "", "Nickname for the node")
 	)
 	flag.Parse()
 
-	config := LoadConfig(*configPath, *peer, *password)
+	config := LoadConfig(*configPath, *peer, *password, *nickname)
 	config.Print()
 	logger := log.New(os.Stderr, config.Nickname+"> ", log.LstdFlags)
 
@@ -37,12 +38,17 @@ func main() {
 	defer func() {
 		cluster.Stop()
 	}()
-
 	// Show the current peers
 	cluster.Peers()
 	// Show a list every 10 seconds
-	go cluster.Info(5)
+	go cluster.Info(10)
 
+	// Create the Shares
+	shares := mfs.NewShare(config.Shares, logger)
+	// Watch the shares
+	go shares.Watch(10)
+	// Run the primary event loop
+	go Process(cluster, shares, 5)
 	// Run and Wait
 	errs := make(chan error, 1)
 	go func() {
@@ -58,13 +64,13 @@ func insert(logger *log.Logger, peer *peer) {
 	for {
 		select {
 		case <-c:
-			r := mfs.NewIPfsfs()
-			if r.Stat() {
-				val := r.Mfs("share")
-				peer.Insert(val.Hash)
-			} else {
-				logger.Printf("No ipfs node")
-			}
+			//r := mfs.NewIPfsfs()
+			//if r.Stat() {
+			//	val := r.Mfs("share")
+			//	peer.Insert(val.Hash)
+			//} else {
+			//	logger.Printf("No ipfs node")
+			//}
 		}
 	}
 }
