@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Process the incoming changes
 func Process(cluster *Cluster, share *mfs.Share, interval int) {
 	c := time.Tick(time.Duration(interval) * time.Second)
 	// get the channels from the constructs
@@ -22,15 +23,3 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 		}
 	}
 }
-
-//func Stuff() {
-//	r := mfs.NewIPfsfs()
-//	if r.Stat() {
-//		val := r.Mfs("share")
-//		peer.Insert(val.Hash)
-//	} else {
-//		logger.Printf("No ipfs node")
-//	}
-//	// Insert the share
-//	go insert(logger, peer)
-//}
