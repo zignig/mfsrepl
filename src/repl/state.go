@@ -14,7 +14,7 @@ type refs map[string]string
 // state is an implementation of a G-counter.
 type state struct {
 	mtx  sync.RWMutex
-	set  map[mesh.PeerName]string
+	set  map[mesh.PeerName]refs
 	self mesh.PeerName
 }
 
@@ -26,21 +26,28 @@ var _ mesh.GossipData = &state{}
 // Other peers will populate us with data.
 func newState(self mesh.PeerName) *state {
 	return &state{
-		set:  map[mesh.PeerName]string{},
+		set:  map[mesh.PeerName]refs{},
 		self: self,
 	}
 }
 
-func (st *state) get() (result string) {
+func (st *state) get() (result refs) {
 	st.mtx.RLock()
 	defer st.mtx.RUnlock()
 	return st.set[st.self]
 }
 
-func (st *state) insert(value string) (complete *state) {
+func (st *state) insert(name, value string) (complete *state) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
-	st.set[st.self] = value
+	cur, ok := st.set[st.self]
+	if ok {
+		cur[name] = value
+	} else {
+		r := refs{}
+		r[name] = value
+		st.set[st.self] = r
+	}
 	return &state{
 		set: st.set,
 	}
@@ -74,7 +81,7 @@ func (st *state) Merge(other mesh.GossipData) (complete mesh.GossipData) {
 
 // Merge the set into our state, abiding increment-only semantics.
 // Return a non-nil mesh.GossipData representation of the received set.
-func (st *state) mergeReceived(set map[mesh.PeerName]string) (received mesh.GossipData) {
+func (st *state) mergeReceived(set map[mesh.PeerName]refs) (received mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
 
@@ -89,7 +96,7 @@ func (st *state) mergeReceived(set map[mesh.PeerName]string) (received mesh.Goss
 
 // Merge the set into our state, abiding increment-only semantics.
 // Return any key/values that have been mutated, or nil if nothing changed.
-func (st *state) mergeDelta(set map[mesh.PeerName]string) (delta mesh.GossipData) {
+func (st *state) mergeDelta(set map[mesh.PeerName]refs) (delta mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
 	for peer, v := range set {
@@ -112,7 +119,7 @@ func (st *state) mergeDelta(set map[mesh.PeerName]string) (delta mesh.GossipData
 
 // Merge the set into our state, abiding increment-only semantics.
 // Return our resulting, complete state.
-func (st *state) mergeComplete(set map[mesh.PeerName]string) (complete mesh.GossipData) {
+func (st *state) mergeComplete(set map[mesh.PeerName]refs) (complete mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
 
