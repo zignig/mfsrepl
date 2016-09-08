@@ -15,6 +15,7 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 			cluster.logger.Printf("BOOP")
 		case update := <-shareUpdates:
 			cluster.logger.Printf("SHARE UPDATE %v", update)
+			cluster.peer.Insert(update.Path, update.NewHash)
 		}
 	}
 }
