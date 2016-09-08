@@ -107,6 +107,11 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 		return nil, err
 	}
 	delta = p.st.mergeDelta(set)
+	p.SpoolMerge(delta)
+	return delta, nil
+}
+
+func (p *peer) SpoolMerge(delta mesh.GossipData) {
 	if delta != nil {
 		for node, values := range delta.(*state).set {
 			//fmt.Println("source ->", node)
@@ -122,12 +127,6 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 			}
 		}
 	}
-	//if delta == nil {
-	//	p.logger.Printf("OnGossip %v => delta %v", set, delta)
-	//} else {
-	//	p.logger.Printf("OnGossip %v => delta %v", set, delta.(*state).set)
-	//}
-	return delta, nil
 }
 
 // Merge the gossiped data represented by buf into our state.
@@ -139,11 +138,7 @@ func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.G
 		return nil, err
 	}
 	received = p.st.mergeReceived(set)
-	//if received == nil {
-	//	p.logger.Printf("OnGossipBroadcast %s %v => delta %v", src, set, received)
-	//} else {
-	//		p.logger.Printf("OnGossipBroadcast %s %v => delta %v", src, set, received.(*state).set)
-	//	}
+	p.SpoolMerge(received)
 	return received, nil
 }
 
