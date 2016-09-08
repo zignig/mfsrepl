@@ -33,7 +33,7 @@ func NewConfig(peer, password, nickname string) (c *Config) {
 		Remotes:  make(map[string]*Remote),
 		Shares:   make(map[string]*mfs.Share),
 		Listen:   "0.0.0.0:6783",
-		Channel:  "default",
+		Channel:  "share",
 		Nickname: mustHostname(),
 	}
 	if peer != "" {
@@ -41,6 +41,9 @@ func NewConfig(peer, password, nickname string) (c *Config) {
 	}
 	if password != "" {
 		c.Password = password
+	}
+	if nickname != "" {
+		c.Nickname = nickname
 	}
 	c.Remotes["bob"] = &Remote{}
 	c.Shares["share"] = &mfs.Share{Path: "/share"}
