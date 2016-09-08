@@ -90,7 +90,6 @@ func (st *state) mergeReceived(set map[mesh.PeerName]string) (received mesh.Goss
 func (st *state) mergeDelta(set map[mesh.PeerName]string) (delta mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
-
 	for peer, v := range set {
 		if _, ok := st.set[peer]; ok {
 			delete(set, peer) // requirement: it's not part of a delta
@@ -99,6 +98,7 @@ func (st *state) mergeDelta(set map[mesh.PeerName]string) (delta mesh.GossipData
 		st.set[peer] = v
 	}
 
+	logger.Printf("%v -> %v", set, delta)
 	if len(set) <= 0 {
 		return nil // per OnGossip requirements
 	}

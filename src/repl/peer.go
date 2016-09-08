@@ -18,6 +18,7 @@ type peer struct {
 	send    mesh.Gossip
 	actions chan<- func()
 	quit    chan struct{}
+	update  chan state
 	logger  *log.Logger
 }
 
@@ -34,6 +35,7 @@ func newPeer(self mesh.PeerName, logger *log.Logger) *peer {
 		send:    nil, // must .register() later
 		actions: actions,
 		quit:    make(chan struct{}),
+		update:  make(chan state),
 		logger:  logger,
 	}
 	go p.loop(actions)

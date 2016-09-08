@@ -1,2 +1,24 @@
 # IPFS MFS replicator
+# Simon Kirkby
+# tigger@interthingy.com
+
+This program uses weaveworks mesh to share the local mfs hashes to other ipfs nodes
+
+At present it only collects the hashes and does not actually copy them across.
+
+The repository is in GB format so you will need https://github.com/constabulary/gb to compile it correctly. 
+
+# Instructions 
+
+1. gb build
+2. run ./bin/repl 
+3. this will create a default config file
+4. edit the peers and password and run again
+5. the has of /share in mfs will be collected and distributed to all nodes.
+
+# TODO
+
+see TODO file.
+
+At present this is just a proof of concept, need security and checking.
 

@@ -8,7 +8,6 @@ import (
 	"net"
 	"os"
 
-	"mfs"
 	"strconv"
 	"time"
 )
@@ -17,6 +16,7 @@ type Cluster struct {
 	config *Config
 	logger *log.Logger
 	router *mesh.Router
+	peer   *peer
 }
 
 func NewCluster(config *Config, logger *log.Logger) (cl *Cluster) {
@@ -47,25 +47,15 @@ func NewCluster(config *Config, logger *log.Logger) (cl *Cluster) {
 	peer := newPeer(name, logger)
 	gossip := router.NewGossip(config.Channel, peer)
 	peer.register(gossip)
-	r := mfs.NewIPfsfs()
-	if r.Stat() {
-		val := r.Mfs("share")
-		peer.Insert(val.Hash)
-	} else {
-		logger.Printf("No ipfs node")
-	}
-	// Insert the share
-	go insert(logger, peer)
-
-	//router.ConnectionMaker.InitiateConnections(peers.slice(), true)
-	if len(config.Peers) > 0 {
-		router.ConnectionMaker.InitiateConnections(config.Peers, true)
-	}
-
+	// bind the peer
+	cl.peer = peer
 	return cl
 }
 
 func (cl *Cluster) Start() {
+	if len(cl.config.Peers) > 0 {
+		cl.router.ConnectionMaker.InitiateConnections(cl.config.Peers, true)
+	}
 	cl.logger.Printf("mesh router starting (%s)", cl.config.Listen)
 	cl.router.Start()
 }
@@ -76,7 +66,7 @@ func (cl *Cluster) Stop() {
 }
 func (cl *Cluster) Peers() {
 	for i, j := range cl.router.Peers.Descriptions() {
-		cl.logger.Printf(" %v , %v [%v] -> %v ", i, j.NickName, j.Name) //, peer.st.set[j.Name])
+		cl.logger.Printf(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
 	}
 }
 
