@@ -17,10 +17,11 @@ const (
 )
 
 type Update struct {
-	Path    string
-	NewHash string
-	OldHash string
-	Stamp   time.Time
+	PeerName string
+	Path     string
+	NewHash  string
+	OldHash  string
+	Stamp    time.Time
 }
 
 //Share : file system ROfs interface

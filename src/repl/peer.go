@@ -7,6 +7,8 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/weaveworks/mesh"
+	"mfs"
+	"time"
 )
 
 // Peer encapsulates state and implements mesh.Gossiper.
@@ -18,7 +20,7 @@ type peer struct {
 	send    mesh.Gossip
 	actions chan<- func()
 	quit    chan struct{}
-	update  chan state
+	update  chan mfs.Update
 	logger  *log.Logger
 }
 
@@ -35,11 +37,17 @@ func newPeer(self mesh.PeerName, logger *log.Logger) *peer {
 		send:    nil, // must .register() later
 		actions: actions,
 		quit:    make(chan struct{}),
-		update:  make(chan state),
+		update:  make(chan mfs.Update, 10),
 		logger:  logger,
 	}
 	go p.loop(actions)
 	return p
+}
+
+// getUpdate
+// return the update channel
+func (p *peer) UpdateChannel() (update chan mfs.Update) {
+	return p.update
 }
 
 func (p *peer) loop(actions <-chan func()) {
@@ -98,8 +106,22 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		return nil, err
 	}
-
 	delta = p.st.mergeDelta(set)
+	if delta != nil {
+		for node, values := range delta.(*state).set {
+			//fmt.Println("source ->", node)
+			for key, value := range values {
+				//fmt.Println("delta ", key, value)
+				u := mfs.Update{
+					Path:     key,
+					NewHash:  value,
+					Stamp:    time.Now(),
+					PeerName: node.String(),
+				}
+				p.update <- u
+			}
+		}
+	}
 	//if delta == nil {
 	//	p.logger.Printf("OnGossip %v => delta %v", set, delta)
 	//} else {

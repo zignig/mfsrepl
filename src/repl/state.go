@@ -94,8 +94,8 @@ func (st *state) mergeReceived(set map[mesh.PeerName]refs) (received mesh.Gossip
 	}
 }
 
-// Merge the set into our state, abiding increment-only semantics.
 // Return any key/values that have been mutated, or nil if nothing changed.
+// TODO this needs to check sub keys
 func (st *state) mergeDelta(set map[mesh.PeerName]refs) (delta mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
