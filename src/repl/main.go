@@ -3,12 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	//"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"mfs"
 )
@@ -40,6 +38,7 @@ func main() {
 	defer func() {
 		cluster.Stop()
 	}()
+
 	// Show the current peers
 	cluster.Peers()
 	// Show a list every 10 seconds
@@ -59,20 +58,4 @@ func main() {
 		errs <- fmt.Errorf("%s", <-c)
 	}()
 	logger.Print(<-errs)
-}
-
-func insert(logger *log.Logger, peer *peer) {
-	c := time.Tick(1 * time.Minute)
-	for {
-		select {
-		case <-c:
-			//r := mfs.NewIPfsfs()
-			//if r.Stat() {
-			//	val := r.Mfs("share")
-			//	peer.Insert(val.Hash)
-			//} else {
-			//	logger.Printf("No ipfs node")
-			//}
-		}
-	}
 }

@@ -9,6 +9,8 @@ import (
 	"github.com/weaveworks/mesh"
 )
 
+type refs map[string]string
+
 // state is an implementation of a G-counter.
 type state struct {
 	mtx  sync.RWMutex
@@ -91,6 +93,7 @@ func (st *state) mergeDelta(set map[mesh.PeerName]string) (delta mesh.GossipData
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
 	for peer, v := range set {
+		// Do we have the key in our data
 		if _, ok := st.set[peer]; ok {
 			delete(set, peer) // requirement: it's not part of a delta
 			continue
