@@ -27,6 +27,7 @@ type Update struct {
 //Share : file system ROfs interface
 type Share struct {
 	Path    string
+	Source  string
 	watch   map[string]string
 	paths   map[string]string
 	updates chan Update

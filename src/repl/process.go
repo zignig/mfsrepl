@@ -11,6 +11,7 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 	// get the channels from the constructs
 	shareUpdates := share.UpdateChannel()
 	remoteUpdates := cluster.peer.UpdateChannel()
+	// loop and wait for events
 	for {
 		select {
 		case <-c:
