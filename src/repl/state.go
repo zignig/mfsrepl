@@ -31,6 +31,17 @@ func newState(self mesh.PeerName) *state {
 	}
 }
 
+func (st *state) String() string {
+	s := "\n"
+	for i, j := range st.set {
+		s += i.String() + "\n"
+		for k, l := range j {
+			s += "\t" + k + " -> " + l + "\n"
+		}
+	}
+	return s
+}
+
 func (st *state) get() (result refs) {
 	st.mtx.RLock()
 	defer st.mtx.RUnlock()
