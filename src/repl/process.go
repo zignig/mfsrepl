@@ -15,13 +15,13 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 	for {
 		select {
 		case <-c:
-			cluster.logger.Printf("BOOP")
-			cluster.logger.Printf("%v", cluster.peer.st)
+			cluster.logger.Debug("BOOP")
+			cluster.logger.Debug("%v", cluster.peer.st)
 		case update := <-shareUpdates:
-			cluster.logger.Printf("SHARE UPDATE %v", update)
+			cluster.logger.Debug("SHARE UPDATE %v", update)
 			cluster.peer.Insert(update.Path, update.NewHash)
 		case update := <-remoteUpdates:
-			cluster.logger.Printf("REMOTE UPDATE %v", update)
+			cluster.logger.Debug("REMOTE UPDATE %v", update)
 		}
 	}
 }

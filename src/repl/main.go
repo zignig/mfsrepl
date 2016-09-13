@@ -3,15 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/op/go-logging"
 	"mfs"
 )
 
-var logger *log.Logger
+var logger *logging.Logger
 
 func main() {
 	fmt.Println("MFS replicator")
@@ -20,13 +20,15 @@ func main() {
 		password   = flag.String("password", "", "password for mesh")
 		peer       = flag.String("peer", "", "peer address")
 		nickname   = flag.String("nickname", "", "Nickname for the node")
+		level      = flag.Int("log", 0, "Logging Level")
 	)
 	flag.Parse()
 
 	config := LoadConfig(*configPath, *peer, *password, *nickname)
-	//config.Print()
-	logger = log.New(os.Stderr, config.Nickname+"> ", log.LstdFlags)
+	LogSetup(*level, "mfsrepl")
 
+	logger := GetLogger("cluster")
+	logger.Critical("NAARG")
 	cluster := NewCluster(config, logger)
 
 	// Spin up the mesh
@@ -57,5 +59,5 @@ func main() {
 		signal.Notify(c, syscall.SIGINT)
 		errs <- fmt.Errorf("%s", <-c)
 	}()
-	logger.Print(<-errs)
+	logger.Critical(<-errs)
 }

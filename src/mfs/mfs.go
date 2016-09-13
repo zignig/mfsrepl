@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/op/go-logging"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -31,14 +31,14 @@ type Share struct {
 	watch   map[string]string
 	paths   map[string]string
 	updates chan Update
-	logger  *log.Logger
+	logger  *logging.Logger
 }
 
 func init() {
 	http.DefaultClient.Transport = &http.Transport{DisableKeepAlives: true}
 }
 
-func NewShare(bind map[string]*Share, logger *log.Logger) (fs *Share) {
+func NewShare(bind map[string]*Share, logger *logging.Logger) (fs *Share) {
 	fs = &Share{}
 	fs.watch = make(map[string]string)
 	fs.paths = make(map[string]string)
@@ -69,7 +69,7 @@ func (fs *Share) Watch(interval int) {
 	for {
 		select {
 		case <-c:
-			fs.logger.Printf("WATCH")
+			fs.logger.Debug("WATCH")
 			fs.CheckChanges()
 		}
 	}

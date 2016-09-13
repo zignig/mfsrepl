@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"github.com/op/go-logging"
 
 	"bytes"
 	"encoding/gob"
@@ -21,7 +21,7 @@ type peer struct {
 	actions chan<- func()
 	quit    chan struct{}
 	update  chan mfs.Update
-	logger  *log.Logger
+	logger  *logging.Logger
 }
 
 // peer implements mesh.Gossiper.
@@ -30,7 +30,7 @@ var _ mesh.Gossiper = &peer{}
 // Construct a peer with empty state.
 // Be sure to register a channel, later,
 // so we can make outbound communication.
-func newPeer(self mesh.PeerName, logger *log.Logger) *peer {
+func newPeer(self mesh.PeerName, logger *logging.Logger) *peer {
 	actions := make(chan func())
 	p := &peer{
 		st:      newState(self),
@@ -76,11 +76,11 @@ func (p *peer) Insert(name, value string) (result refs) {
 	p.actions <- func() {
 		defer close(c)
 		st := p.st.insert(name, value)
-		p.logger.Printf("insert data %v", st)
+		p.logger.Debug("insert data %v", st)
 		if p.send != nil {
 			p.send.GossipBroadcast(st)
 		} else {
-			p.logger.Printf("no sender configured; not broadcasting update right now")
+			p.logger.Critical("no sender configured; not broadcasting update right now")
 		}
 		result = st.get()
 	}
@@ -144,13 +144,13 @@ func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.G
 
 // Merge the gossiped data represented by buf into our state.
 func (p *peer) OnGossipUnicast(src mesh.PeerName, buf []byte) error {
-	p.logger.Printf(" unicast , %s", src)
+	p.logger.Info(" unicast , %s", src)
 	var set map[mesh.PeerName]refs
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		return err
 	}
 
 	complete := p.st.mergeComplete(set)
-	p.logger.Printf("OnGossipUnicast %s %v => complete %v", src, set, complete)
+	p.logger.Debug("OnGossipUnicast %s %v => complete %v", src, set, complete)
 	return nil
 }

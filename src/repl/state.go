@@ -6,8 +6,11 @@ import (
 
 	"encoding/gob"
 
+	"github.com/op/go-logging"
 	"github.com/weaveworks/mesh"
 )
+
+var log = logging.MustGetLogger("state")
 
 type refs map[string]string
 
@@ -119,7 +122,7 @@ func (st *state) mergeDelta(set map[mesh.PeerName]refs) (delta mesh.GossipData) 
 		st.set[peer] = v
 	}
 
-	logger.Printf("%v -> %v", set, delta)
+	log.Debug("%v -> %v", set, delta)
 	if len(set) <= 0 {
 		return nil // per OnGossip requirements
 	}
