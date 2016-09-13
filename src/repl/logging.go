@@ -44,6 +44,6 @@ func NewLogWrap(source *logging.Logger) (lr *LogWrap) {
 	return lr
 }
 
-func (lr *LogWrap) Printf(string, ...interface{}) {
-	lr.log.Debug("logme")
+func (lr *LogWrap) Printf(format string, args ...interface{}) {
+	lr.log.Debug(format, args)
 }
