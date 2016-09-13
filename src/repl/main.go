@@ -14,7 +14,6 @@ import (
 var logger *logging.Logger
 
 func main() {
-	fmt.Println("MFS replicator")
 	var (
 		configPath = flag.String("config", "./repl.toml", "config file path")
 		password   = flag.String("password", "", "password for mesh")
@@ -28,7 +27,7 @@ func main() {
 	LogSetup(*level, "mfsrepl")
 
 	logger := GetLogger("cluster")
-	logger.Critical("NAARG")
+	logger.Critical("MFS replicator")
 	cluster := NewCluster(config, logger)
 
 	// Spin up the mesh
@@ -51,7 +50,7 @@ func main() {
 	// Watch the shares
 	go shares.Watch(10)
 	// Run the primary event loop
-	go Process(cluster, shares, 5)
+	go Process(cluster, shares, 10)
 	// Run and Wait
 	errs := make(chan error, 1)
 	go func() {

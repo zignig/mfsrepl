@@ -48,7 +48,6 @@ func NewShare(bind map[string]*Share, logger *logging.Logger) (fs *Share) {
 		fs.paths[i] = j.Path
 		fs.watch[i] = ""
 	}
-	fmt.Println(fs)
 	return fs
 }
 

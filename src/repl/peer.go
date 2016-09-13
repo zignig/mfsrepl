@@ -76,7 +76,7 @@ func (p *peer) Insert(name, value string) (result refs) {
 	p.actions <- func() {
 		defer close(c)
 		st := p.st.insert(name, value)
-		p.logger.Debug("insert data %v", st)
+		p.logger.Debugf("Insert data %v", st)
 		if p.send != nil {
 			p.send.GossipBroadcast(st)
 		} else {

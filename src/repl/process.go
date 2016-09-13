@@ -12,18 +12,17 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 	shareUpdates := share.UpdateChannel()
 	remoteUpdates := cluster.peer.UpdateChannel()
 	// loop and wait for events
+	cluster.logger.Info("Starting Main Loop")
 	for {
 		select {
 		case <-c:
 			cluster.logger.Debug("BOOP")
-			cluster.logger.Debug("%v", cluster.peer.st)
+			cluster.logger.Debugf("%v", cluster.peer.st)
 		case update := <-shareUpdates:
 			cluster.logger.Debug("SHARE UPDATE %v", update)
 			cluster.peer.Insert(update.Path, update.NewHash)
 		case update := <-remoteUpdates:
-			cluster.logger.Debug("REMOTE UPDATE %v", update)
+			cluster.logger.Debugf("REMOTE UPDATE %v", update)
 		}
 	}
 }
-
-//}

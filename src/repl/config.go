@@ -52,7 +52,7 @@ func NewConfig(peer, password, nickname string) (c *Config) {
 
 func LoadConfig(path, peer, password, nickname string) (c *Config) {
 	if _, err := toml.DecodeFile(path, &c); err != nil {
-		fmt.Println("NO CONFIG, generate empty")
+		logger.Critical("NO CONFIG, generate empty")
 		c = NewConfig(peer, password, nickname)
 		c.Save(path)
 	}
@@ -63,7 +63,7 @@ func (c *Config) Print() {
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(c)
 	if err != nil {
-		fmt.Println(err)
+		logger.Criticalf("%v", err)
 	}
 	fmt.Println(buf.String())
 }
@@ -72,12 +72,12 @@ func (c *Config) Save(path string) {
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(c)
 	if err != nil {
-		fmt.Println(err)
+		logger.Errorf("%v", err)
 	}
 	f, err := os.Create(path)
 	defer f.Close()
 	if err != nil {
-		fmt.Println(err)
+		logger.Errorf("%v", err)
 	}
 	f.Write(buf.Bytes())
 }

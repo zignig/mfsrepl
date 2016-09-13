@@ -122,7 +122,7 @@ func (st *state) mergeDelta(set map[mesh.PeerName]refs) (delta mesh.GossipData) 
 		st.set[peer] = v
 	}
 
-	log.Debug("%v -> %v", set, delta)
+	//log.Debugf("%v -> %v", set, delta)
 	if len(set) <= 0 {
 		return nil // per OnGossip requirements
 	}

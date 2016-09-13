@@ -58,7 +58,7 @@ func (cl *Cluster) Start() {
 	if len(cl.config.Peers) > 0 {
 		cl.router.ConnectionMaker.InitiateConnections(cl.config.Peers, true)
 	}
-	cl.logger.Info("mesh router starting (%s)", cl.config.Listen)
+	cl.logger.Infof("mesh router starting (%s)", cl.config.Listen)
 	cl.router.Start()
 }
 
@@ -68,7 +68,7 @@ func (cl *Cluster) Stop() {
 }
 func (cl *Cluster) Peers() {
 	for i, j := range cl.router.Peers.Descriptions() {
-		cl.logger.Debug(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
+		cl.logger.Debugf(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
 	}
 }
 

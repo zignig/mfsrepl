@@ -7,13 +7,23 @@ import (
 )
 
 //var logger = logging.MustGetLogger("mfsrepl")
+var globallevel int
 
 var format = logging.MustStringFormatter(
 	"%{color}%{time:0102 15:04:05.000}  %{shortfunc:13s} %{level:8s} %{id:03x}%{color:reset} %{message}",
 )
 
 func GetLogger(name string) (l *logging.Logger) {
-	return logging.MustGetLogger(name)
+	l = logging.MustGetLogger(name)
+	switch globallevel {
+	case 0:
+		logging.SetLevel(logging.NOTICE, name)
+	case 1:
+		logging.SetLevel(logging.INFO, name)
+	case 2:
+		logging.SetLevel(logging.DEBUG, name)
+	}
+	return l
 }
 
 //LogSetup : set up the logging for information output
@@ -31,6 +41,7 @@ func LogSetup(level int, name string) {
 		backend1Leveled.SetLevel(logging.DEBUG, name)
 	}
 	logging.SetBackend(backend1Leveled)
+	globallevel = level
 }
 
 type LogWrap struct {
@@ -45,5 +56,5 @@ func NewLogWrap(source *logging.Logger) (lr *LogWrap) {
 }
 
 func (lr *LogWrap) Printf(format string, args ...interface{}) {
-	lr.log.Debug(format, args)
+	lr.log.Debugf(format, args)
 }
