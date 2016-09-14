@@ -45,7 +45,8 @@ func NewShare(bind map[string]*Share, logger *logging.Logger) (fs *Share) {
 	fs.updates = make(chan Update, 50)
 	fs.logger = logger
 	for i, j := range bind {
-		fs.paths[i] = j.Path
+		fs.paths[i] = j.Source
+		fs.logger.Debugf("%v", fs.paths)
 		fs.watch[i] = ""
 	}
 	return fs
@@ -76,10 +77,10 @@ func (fs *Share) Watch(interval int) {
 
 func (fs *Share) CheckChanges() {
 	for i, j := range fs.paths {
-		//fs.logger.Printf("Check changes %v , %v ", i, j)
+		fs.logger.Debugf("Check changes %v , %v ", i, j)
 		if fs.Stat() {
 			stat := fs.Mfs(j)
-			//fs.logger.Printf("STAT %v", stat)
+			fs.logger.Debugf("STAT %v", stat)
 			if fs.watch[i] != stat.Hash {
 				update := Update{
 					Path:    i,

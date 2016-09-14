@@ -19,7 +19,7 @@ func main() {
 		password   = flag.String("password", "", "password for mesh")
 		peer       = flag.String("peer", "", "peer address")
 		nickname   = flag.String("nickname", "", "Nickname for the node")
-		level      = flag.Int("log", 0, "Logging Level")
+		level      = flag.Int("log", 2, "Logging Level")
 	)
 	flag.Parse()
 

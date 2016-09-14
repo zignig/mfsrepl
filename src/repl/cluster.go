@@ -66,9 +66,10 @@ func (cl *Cluster) Stop() {
 	cl.logger.Critical("mesh router stopping")
 	cl.router.Stop()
 }
+
 func (cl *Cluster) Peers() {
 	for i, j := range cl.router.Peers.Descriptions() {
-		cl.logger.Debugf(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
+		cl.logger.Infof(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
 	}
 }
 
