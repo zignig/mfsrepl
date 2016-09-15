@@ -17,6 +17,7 @@ type Cluster struct {
 	logger *logging.Logger
 	router *mesh.Router
 	peer   *peer
+	names  map[string]string
 }
 
 func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
@@ -51,6 +52,7 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 	peer.register(gossip)
 	// bind the peer
 	cl.peer = peer
+	cl.names = make(map[string]string)
 	return cl
 }
 
@@ -69,6 +71,7 @@ func (cl *Cluster) Stop() {
 
 func (cl *Cluster) Peers() {
 	for i, j := range cl.router.Peers.Descriptions() {
+		cl.names[j.Name.String()] = j.NickName
 		cl.logger.Infof(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
 	}
 }
