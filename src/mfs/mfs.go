@@ -96,8 +96,24 @@ func (fs *Share) CheckChanges() {
 	}
 }
 
+func (fs *Share) Mkdir(path string, parents bool) (err error) {
+	val := url.Values{}
+	val.Set("arg", path)
+	if parents {
+		val.Set("p", "true")
+	}
+	_, err = fs.Request("files/mkdir", val)
+	if err != nil {
+		fs.logger.Error(err)
+		return err
+	}
+	return nil
+}
+
 func (fs *Share) Mfs(path string) (s *Stat) {
-	htr, _ := fs.Req("files/stat", "/"+path)
+	val := url.Values{}
+	val.Set("arg", path)
+	htr, _ := fs.Request("files/stat", val)
 	data, _ := ioutil.ReadAll(htr.Body)
 	merr := json.Unmarshal(data, &s)
 	if merr != nil {
@@ -109,25 +125,24 @@ func (fs *Share) Mfs(path string) (s *Stat) {
 
 //Stat : Check if the file system exist
 func (fs *Share) Stat() (stat bool) {
-	_, err := fs.Req("id", "")
+	_, err := fs.Request("id", nil)
 	if err != nil {
 		return false
 	}
 	return true
 }
 
-//Req : base request for ipfs access
-func (fs *Share) Req(path string, arg string) (resp *http.Response, err error) {
+func (fs *Share) Request(path string, val url.Values) (resp *http.Response, err error) {
 	u := url.URL{}
 	u.Scheme = "http"
 	u.Host = ipfsHost
 	u.Path = api + path
-	if arg != "" {
-		val := url.Values{}
-		val.Set("arg", arg)
-		val.Set("encoding", "json")
-		u.RawQuery = val.Encode()
+	if val == nil {
+		val = url.Values{}
 	}
+	val.Set("encoding", "json")
+	u.RawQuery = val.Encode()
+	fs.logger.Debugf("url request -> %s", u.String())
 	resp, err = http.Get(u.String())
 	if resp == nil {
 		return nil, err
