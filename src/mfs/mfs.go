@@ -3,11 +3,11 @@ package mfs
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -17,8 +17,8 @@ const (
 )
 
 type Update struct {
-	PeerName string
 	Path     string
+	PeerName string
 	NewHash  string
 	OldHash  string
 	Stamp    time.Time
@@ -32,6 +32,7 @@ type Share struct {
 	paths   map[string]string
 	updates chan Update
 	logger  *logging.Logger
+	lock    sync.Mutex
 }
 
 func init() {
@@ -58,6 +59,9 @@ type Stat struct {
 	CumulativeSize int
 	Blocks         int
 	Type           string
+	// in case of error
+	Message string
+	Code    int
 }
 
 func (fs *Share) UpdateChannel() (c chan Update) {
@@ -76,10 +80,13 @@ func (fs *Share) Watch(interval int) {
 }
 
 func (fs *Share) CheckChanges() {
-	for i, j := range fs.paths {
-		fs.logger.Debugf("Check changes %v , %v ", i, j)
-		if fs.Stat() {
-			stat := fs.Mfs(j)
+	if fs.Stat() {
+		for i, j := range fs.paths {
+			fs.logger.Debugf("Check changes %v , %v ", i, j)
+			stat, err := fs.Mfs(j)
+			if err != nil {
+				fs.logger.Errorf("file does not exists , %v", err)
+			}
 			fs.logger.Debugf("STAT %v", stat)
 			if fs.watch[i] != stat.Hash {
 				update := Update{
@@ -91,16 +98,63 @@ func (fs *Share) CheckChanges() {
 				fs.updates <- update
 				fs.watch[i] = stat.Hash
 			}
-
 		}
 	}
 }
 
-func (fs *Share) Backup(path string) {
+func (fs *Share) SubmitUpdate(u Update) (err error) {
+	fs.lock.Lock()
+	defer fs.lock.Unlock()
+	fs.logger.Info(u)
+	// Make the target backup
+	backupPath := fs.StampBackup()
+	sourcePath := "/" + u.Path + "/" + u.PeerName
+	err = fs.Move(sourcePath, backupPath+sourcePath)
+	if err != nil {
+		fs.logger.Errorf("Move %v", err)
+	}
+	err = fs.CopyHash(u.NewHash, sourcePath)
+	if err != nil {
+		fs.logger.Errorf("Copy %v", err)
+	}
+	return err
+}
+
+func (fs *Share) StampBackup() string {
 	const layout = "/2006/01/02/15/04/"
 	n := time.Now()
 	dateBack := n.Format(layout)
+	fs.logger.Critical("Backup ", dateBack)
 	fs.Mkdir(dateBack, true)
+	return dateBack
+}
+
+func (fs *Share) Move(source, destination string) (err error) {
+	val := url.Values{}
+	val.Set("arg", source)
+	val.Add("arg", destination)
+	_, err = fs.Request("files/mv", val)
+	if err != nil {
+		fs.logger.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (fs *Share) CopyHash(source, destination string) (err error) {
+	return fs.Copy("/ipfs/"+source, destination)
+}
+
+func (fs *Share) Copy(source, destination string) (err error) {
+	val := url.Values{}
+	val.Set("arg", source)
+	val.Add("arg", destination)
+	_, err = fs.Request("files/cp", val)
+	if err != nil {
+		fs.logger.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (fs *Share) Mkdir(path string, parents bool) (err error) {
@@ -117,17 +171,20 @@ func (fs *Share) Mkdir(path string, parents bool) (err error) {
 	return nil
 }
 
-func (fs *Share) Mfs(path string) (s *Stat) {
+func (fs *Share) Mfs(path string) (s *Stat, err error) {
 	val := url.Values{}
 	val.Set("arg", path)
-	htr, _ := fs.Request("files/stat", val)
+	htr, err := fs.Request("files/stat", val)
+	if err != nil {
+		fs.logger.Error(err)
+	}
 	data, _ := ioutil.ReadAll(htr.Body)
 	merr := json.Unmarshal(data, &s)
 	if merr != nil {
-		fmt.Println("FAIL", merr)
+		fs.logger.Error(err)
+		return nil, err
 	}
-	//fmt.Println(s)
-	return s
+	return s, err
 }
 
 //Stat : Check if the file system exist

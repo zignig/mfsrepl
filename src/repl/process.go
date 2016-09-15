@@ -24,8 +24,12 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 			// update the names
 			cluster.GetNames()
 			// convert to name from peerid
-			update.PeerName = cluster.names[update.PeerName]
-			cluster.logger.Infof("REMOTE UPDATE %v", update)
+			val, ok := cluster.names[update.PeerName]
+			if ok {
+				update.PeerName = val
+				cluster.logger.Infof("%v", update)
+				share.SubmitUpdate(update)
+			}
 			//share.Mkdir("/"+update.Path+"/"+update.PeerName, true)
 		}
 	}

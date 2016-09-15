@@ -47,6 +47,7 @@ func main() {
 
 	// Create the Shares
 	shares := mfs.NewShare(config.Shares, logger)
+	fmt.Println(shares.Mfs("/fnord"))
 	// Watch the shares
 	go shares.Watch(10)
 	// Run the primary event loop

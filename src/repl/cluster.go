@@ -81,7 +81,7 @@ func (cl *Cluster) Peers() {
 	cl.GetNames()
 	for i, j := range cl.router.Peers.Descriptions() {
 		cl.logger.Infof(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
-		cl.logger.Infof("NAMES %v", cl.names)
+		//cl.logger.Infof("NAMES %v", cl.names)
 	}
 }
 

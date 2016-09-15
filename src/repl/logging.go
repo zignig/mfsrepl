@@ -10,8 +10,10 @@ import (
 var globallevel int
 
 var format = logging.MustStringFormatter(
-	"%{color}%{time:0102 15:04:05.000}  %{shortfunc:13s} %{level:8s} %{id:03x}%{color:reset} %{message}",
+	"%{color} %{id:03x} %{shortfunc:13s} %{level:8s} %{color:reset} %{message}",
 )
+
+//"%{color}%{time:0102 15:04:05.000}  %{shortfunc:13s} %{level:8s} %{id:03x}%{color:reset} %{message}",
 
 func GetLogger(name string) (l *logging.Logger) {
 	l = logging.MustGetLogger(name)
