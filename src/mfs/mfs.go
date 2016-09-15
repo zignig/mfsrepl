@@ -96,6 +96,13 @@ func (fs *Share) CheckChanges() {
 	}
 }
 
+func (fs *Share) Backup(path string) {
+	const layout = "/2006/01/02/15/04/"
+	n := time.Now()
+	dateBack := n.Format(layout)
+	fs.Mkdir(dateBack, true)
+}
+
 func (fs *Share) Mkdir(path string, parents bool) (err error) {
 	val := url.Values{}
 	val.Set("arg", path)

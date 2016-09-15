@@ -22,6 +22,7 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 			cluster.peer.Insert(update.Path, update.NewHash)
 		case update := <-remoteUpdates:
 			cluster.logger.Infof("REMOTE UPDATE %v", update)
+			//share.Backup("")
 		}
 	}
 }
