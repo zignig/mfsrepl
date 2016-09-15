@@ -56,6 +56,14 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 	return cl
 }
 
+func (cl *Cluster) GetNames() {
+	stat := mesh.NewStatus(cl.router)
+	for _, j := range stat.Peers {
+		cl.names[j.Name] = j.NickName
+	}
+
+}
+
 func (cl *Cluster) Start() {
 	if len(cl.config.Peers) > 0 {
 		cl.router.ConnectionMaker.InitiateConnections(cl.config.Peers, true)
@@ -70,9 +78,10 @@ func (cl *Cluster) Stop() {
 }
 
 func (cl *Cluster) Peers() {
+	cl.GetNames()
 	for i, j := range cl.router.Peers.Descriptions() {
-		cl.names[j.Name.String()] = j.NickName
 		cl.logger.Infof(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
+		cl.logger.Infof("NAMES %v", cl.names)
 	}
 }
 
