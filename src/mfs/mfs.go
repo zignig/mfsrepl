@@ -103,19 +103,26 @@ func (fs *Share) CheckChanges() {
 }
 
 func (fs *Share) SubmitUpdate(u Update) (err error) {
-	fs.lock.Lock()
-	defer fs.lock.Unlock()
-	fs.logger.Info(u)
-	// Make the target backup
-	backupPath := fs.StampBackup()
-	sourcePath := "/" + u.Path + "/" + u.PeerName
-	err = fs.Move(sourcePath, backupPath+sourcePath)
-	if err != nil {
-		fs.logger.Errorf("Move %v", err)
-	}
-	err = fs.CopyHash(u.NewHash, sourcePath)
-	if err != nil {
-		fs.logger.Errorf("Copy %v", err)
+	if fs.Stat() {
+		fs.lock.Lock()
+		defer fs.lock.Unlock()
+		fs.logger.Infof("%v", u)
+		// do we have this share
+		_, ok := fs.watch[u.Path]
+		if ok {
+			// Make the target backup
+			backupPath := fs.StampBackup()
+			sourcePath := "/" + u.Path + "/" + u.PeerName
+			fs.Mkdir(backupPath+"/"+u.Path, true)
+			err = fs.Move(sourcePath, backupPath+sourcePath)
+			if err != nil {
+				fs.logger.Errorf("Move %v", err)
+			}
+			err = fs.CopyHash(u.NewHash, sourcePath)
+			if err != nil {
+				fs.logger.Errorf("Copy %v", err)
+			}
+		}
 	}
 	return err
 }
