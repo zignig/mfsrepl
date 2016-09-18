@@ -43,11 +43,10 @@ func main() {
 	// Show the current peers
 	cluster.Peers()
 	// Show a list every 10 seconds
-	go cluster.Info(10)
+	go cluster.Info(30)
 
 	// Create the Shares
 	shares := mfs.NewShare(config.Shares, logger)
-	fmt.Println(shares.Mfs("/fnord"))
 	// Watch the shares
 	go shares.Watch(10)
 	// Run the primary event loop
