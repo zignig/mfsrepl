@@ -97,6 +97,7 @@ func (fs *Share) CheckChanges() {
 				}
 				fs.updates <- update
 				fs.watch[i] = stat.Hash
+				fs.logger.Criticalf("HASH has changed! %v", update)
 			}
 		}
 	}
