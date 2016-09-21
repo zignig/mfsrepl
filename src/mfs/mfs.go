@@ -86,6 +86,7 @@ func (fs *Share) CheckChanges() {
 			stat, err := fs.Mfs(j)
 			if err != nil {
 				fs.logger.Errorf("file does not exists , %v", err)
+				continue
 			}
 			fs.logger.Debugf("STAT %v", stat)
 			if fs.watch[i] != stat.Hash {
