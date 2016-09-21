@@ -30,7 +30,7 @@ type Share struct {
 	Source  string
 	watch   map[string]string
 	paths   map[string]string
-	updates chan Update
+	Updates chan Update
 	logger  *logging.Logger
 	lock    sync.Mutex
 }
@@ -43,7 +43,7 @@ func NewShare(bind map[string]*Share, logger *logging.Logger) (fs *Share) {
 	fs = &Share{}
 	fs.watch = make(map[string]string)
 	fs.paths = make(map[string]string)
-	fs.updates = make(chan Update, 50)
+	fs.Updates = make(chan Update, 50)
 	fs.logger = logger
 	for i, j := range bind {
 		fs.paths[i] = j.Source
@@ -65,7 +65,7 @@ type Stat struct {
 }
 
 func (fs *Share) UpdateChannel() (c chan Update) {
-	return fs.updates
+	return fs.Updates
 }
 
 func (fs *Share) Watch(interval int) {
@@ -95,7 +95,7 @@ func (fs *Share) CheckChanges() {
 					NewHash: stat.Hash,
 					Stamp:   time.Now(),
 				}
-				fs.updates <- update
+				fs.Updates <- update
 				fs.watch[i] = stat.Hash
 				fs.logger.Criticalf("HASH has changed! %v", update)
 			}
@@ -104,9 +104,13 @@ func (fs *Share) CheckChanges() {
 }
 
 func (fs *Share) SubmitUpdate(u Update) (err error) {
+	fs.lock.Lock()
+	defer func() {
+		fs.logger.Infof("UNLOCK")
+		fs.lock.Unlock()
+	}()
+	fs.logger.Infof("LOCK")
 	if fs.Stat() {
-		fs.lock.Lock()
-		defer fs.lock.Unlock()
 		fs.logger.Infof("%v", u)
 		// do we have this share
 		_, ok := fs.watch[u.Path]
@@ -118,10 +122,12 @@ func (fs *Share) SubmitUpdate(u Update) (err error) {
 			err = fs.Move(sourcePath, backupPath+sourcePath)
 			if err != nil {
 				fs.logger.Errorf("Move %v", err)
+				return
 			}
 			err = fs.CopyHash(u.NewHash, sourcePath)
 			if err != nil {
 				fs.logger.Errorf("Copy %v", err)
+				return
 			}
 		}
 	}
@@ -185,6 +191,7 @@ func (fs *Share) Mfs(path string) (s *Stat, err error) {
 	htr, err := fs.Request("files/stat", val)
 	if err != nil {
 		fs.logger.Error(err)
+		return nil, err
 	}
 	data, _ := ioutil.ReadAll(htr.Body)
 	merr := json.Unmarshal(data, &s)
