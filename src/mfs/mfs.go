@@ -16,6 +16,8 @@ const (
 	ipfsHost = "localhost:5001"
 )
 
+var logger = logging.MustGetLogger("mfs")
+
 type Update struct {
 	Path     string
 	PeerName string
@@ -31,7 +33,6 @@ type Share struct {
 	watch   map[string]string
 	paths   map[string]string
 	Updates chan Update
-	logger  *logging.Logger
 	lock    sync.Mutex
 }
 
@@ -39,15 +40,14 @@ func init() {
 	http.DefaultClient.Transport = &http.Transport{DisableKeepAlives: true}
 }
 
-func NewShare(bind map[string]*Share, logger *logging.Logger) (fs *Share) {
+func NewShare(bind map[string]*Share) (fs *Share) {
 	fs = &Share{}
 	fs.watch = make(map[string]string)
 	fs.paths = make(map[string]string)
 	fs.Updates = make(chan Update, 50)
-	fs.logger = logger
 	for i, j := range bind {
 		fs.paths[i] = j.Source
-		fs.logger.Debugf("%v", fs.paths)
+		logger.Debugf("%v", fs.paths)
 		fs.watch[i] = ""
 	}
 	return fs
@@ -73,7 +73,7 @@ func (fs *Share) Watch(interval int) {
 	for {
 		select {
 		case <-c:
-			fs.logger.Debug("WATCH")
+			logger.Debug("WATCH")
 			fs.CheckChanges()
 		}
 	}
@@ -82,13 +82,13 @@ func (fs *Share) Watch(interval int) {
 func (fs *Share) CheckChanges() {
 	if fs.Stat() {
 		for i, j := range fs.paths {
-			fs.logger.Debugf("Check changes %v , %v ", i, j)
+			logger.Debugf("Check changes %v , %v ", i, j)
 			stat, err := fs.Mfs(j)
 			if err != nil {
-				fs.logger.Errorf("file does not exists , %v", err)
+				logger.Errorf("file does not exists , %v", err)
 				continue
 			}
-			fs.logger.Debugf("STAT %v", stat)
+			logger.Debugf("STAT %v", stat)
 			if fs.watch[i] != stat.Hash {
 				update := Update{
 					Path:    i,
@@ -98,21 +98,21 @@ func (fs *Share) CheckChanges() {
 				}
 				fs.Updates <- update
 				fs.watch[i] = stat.Hash
-				fs.logger.Criticalf("HASH has changed! %v", update)
+				logger.Criticalf("HASH has changed! %v", update)
 			}
 		}
 	}
 }
 
 func (fs *Share) SubmitUpdate(u Update) (err error) {
-	fs.lock.Lock()
-	defer func() {
-		fs.logger.Infof("UNLOCK")
-		fs.lock.Unlock()
-	}()
-	fs.logger.Infof("LOCK")
 	if fs.Stat() {
-		fs.logger.Infof("%v", u)
+		fs.lock.Lock()
+		defer func() {
+			logger.Infof("UNLOCK")
+			fs.lock.Unlock()
+		}()
+		logger.Infof("LOCK")
+		logger.Infof("%v", u)
 		// do we have this share
 		_, ok := fs.watch[u.Path]
 		if ok {
@@ -122,12 +122,12 @@ func (fs *Share) SubmitUpdate(u Update) (err error) {
 			fs.Mkdir(backupPath+"/"+u.Path, true)
 			err = fs.Move(sourcePath, backupPath+sourcePath)
 			if err != nil {
-				fs.logger.Errorf("Move %v", err)
+				logger.Errorf("Move %v", err)
 				return
 			}
 			err = fs.CopyHash(u.NewHash, sourcePath)
 			if err != nil {
-				fs.logger.Errorf("Copy %v", err)
+				logger.Errorf("Copy %v", err)
 				return
 			}
 		}
@@ -139,7 +139,7 @@ func (fs *Share) StampBackup() string {
 	const layout = "/2006/01/02/15/04/"
 	n := time.Now()
 	dateBack := n.Format(layout)
-	fs.logger.Critical("Backup ", dateBack)
+	logger.Critical("Backup ", dateBack)
 	fs.Mkdir(dateBack, true)
 	return dateBack
 }
@@ -150,7 +150,7 @@ func (fs *Share) Move(source, destination string) (err error) {
 	val.Add("arg", destination)
 	_, err = fs.Request("files/mv", val)
 	if err != nil {
-		fs.logger.Error(err)
+		logger.Error(err)
 		return err
 	}
 	return nil
@@ -166,7 +166,7 @@ func (fs *Share) Copy(source, destination string) (err error) {
 	val.Add("arg", destination)
 	_, err = fs.Request("files/cp", val)
 	if err != nil {
-		fs.logger.Error(err)
+		logger.Error(err)
 		return err
 	}
 	return nil
@@ -180,7 +180,7 @@ func (fs *Share) Mkdir(path string, parents bool) (err error) {
 	}
 	_, err = fs.Request("files/mkdir", val)
 	if err != nil {
-		fs.logger.Error(err)
+		logger.Error(err)
 		return err
 	}
 	return nil
@@ -190,14 +190,15 @@ func (fs *Share) Mfs(path string) (s *Stat, err error) {
 	val := url.Values{}
 	val.Set("arg", path)
 	htr, err := fs.Request("files/stat", val)
+	defer htr.Body.Close()
 	if err != nil {
-		fs.logger.Error(err)
+		logger.Error(err)
 		return nil, err
 	}
 	data, _ := ioutil.ReadAll(htr.Body)
 	merr := json.Unmarshal(data, &s)
 	if merr != nil {
-		fs.logger.Error(err)
+		logger.Error(err)
 		return nil, err
 	}
 	return s, err
@@ -222,7 +223,7 @@ func (fs *Share) Request(path string, val url.Values) (resp *http.Response, err 
 	}
 	val.Set("encoding", "json")
 	u.RawQuery = val.Encode()
-	fs.logger.Debugf("url request -> %s", u.String())
+	logger.Debugf("url request -> %s", u.String())
 	resp, err = http.Get(u.String())
 	if resp == nil {
 		return nil, err
