@@ -25,6 +25,7 @@ func main() {
 
 	config := LoadConfig(*configPath, *peer, *password, *nickname)
 	LogSetup(*level, "mfsrepl")
+	logging.SetLevel(logging.DEBUG, "mfs")
 
 	logger := GetLogger("cluster")
 	logger.Critical("MFS replicator")
@@ -46,7 +47,7 @@ func main() {
 	go cluster.Info(30)
 
 	// Create the Shares
-	shares := mfs.NewShare(config.Shares, logger)
+	shares := mfs.NewShare(config.Shares)
 	// Watch the shares
 	go shares.Watch(10)
 	// Run the primary event loop
