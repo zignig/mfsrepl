@@ -49,6 +49,7 @@ func NewShare(bind map[string]*Share) (fs *Share) {
 		fs.paths[i] = j.Source
 		logger.Debugf("%v", fs.paths)
 		fs.watch[i] = ""
+		fs.Mkdir("/"+i, true)
 	}
 	return fs
 }
@@ -123,6 +124,7 @@ func (fs *Share) SubmitUpdate(u Update) (err error) {
 			err = fs.Move(sourcePath, backupPath+sourcePath)
 			if err != nil {
 				logger.Errorf("Move %v", err)
+				fs.Mkdir(sourcePath, true)
 				return
 			}
 			err = fs.CopyHash(u.NewHash, sourcePath)
