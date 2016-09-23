@@ -10,7 +10,8 @@ func TestStore(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	ks.NewKey()
+	k, err := ks.NewLocalKey()
+	fmt.Println(k, err)
 	ks.Close()
 	t.Errorf("FAIL")
 

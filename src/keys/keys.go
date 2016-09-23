@@ -8,10 +8,21 @@ import (
 
 	"crypto/rand"
 	"crypto/rsa"
-	//	"encoding/base64"
 	"crypto/x509"
 	"encoding/pem"
+	"time"
 )
+
+type LocalKey struct {
+	Private string
+	Public  string
+	Date    time.Time
+}
+
+type RemoteKey struct {
+	Public string
+	Date   time.Time
+}
 
 var logger = logging.MustGetLogger("keystore")
 
@@ -26,28 +37,31 @@ func NewKeyStore(path string) (ks *KeyStore, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return ks, nil
+
 }
 
 func (ks KeyStore) Close() {
 	ks.db.Close()
 }
 
-func (ks KeyStore) NewKey() {
+func (ks KeyStore) NewLocalKey() (lc *LocalKey, err error) {
 	var privateKey *rsa.PrivateKey
 	var publicKey *rsa.PublicKey
-	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	privateKey, err = rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Critical(err)
+		return nil, err
 	}
 	publicKey = &privateKey.PublicKey
 	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
 	pr := string(pem.EncodeToMemory(privateKeyPEM))
-	logger.Criticalf("priv key %v", pr)
 
 	publicKeyDER, err := x509.MarshalPKIXPublicKey(publicKey)
 	if err != nil {
-		logger.Fatalf("PUBLIC %v", err)
+		logger.Criticalf("PUBLIC %v", err)
+		return nil, err
 	}
 	publicKeyBlock := pem.Block{
 		Type:    "PUBLIC KEY",
@@ -55,5 +69,11 @@ func (ks KeyStore) NewKey() {
 		Bytes:   publicKeyDER,
 	}
 	pb := string(pem.EncodeToMemory(&publicKeyBlock))
-	logger.Criticalf("pub key %v", pb)
+
+	lc = &LocalKey{
+		Private: pr,
+		Public:  pb,
+		Date:    time.Now(),
+	}
+	return lc, nil
 }
