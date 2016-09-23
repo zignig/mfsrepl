@@ -8,8 +8,9 @@ import (
 
 	"crypto/rand"
 	"crypto/rsa"
-
-	"encoding/base64"
+	//	"encoding/base64"
+	"crypto/x509"
+	"encoding/pem"
 )
 
 var logger = logging.MustGetLogger("keystore")
@@ -33,16 +34,26 @@ func (ks KeyStore) Close() {
 }
 
 func (ks KeyStore) NewKey() {
-	privateKey := new(ecdsa.PrivateKey)
-	privateKey, err := ecdsa.GenerateKey(pubkeyCurve, rand.Reader)
+	var privateKey *rsa.PrivateKey
+	var publicKey *rsa.PublicKey
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	var pubkey ecdsa.PublicKey
-	pubkey = privateKey.PublicKey
-	logger.Criticalf("public key: %v", pubkey)
-	logger.Criticalf("public key: %v", privateKey)
-	str := base64.StdEncoding.EncodeToString(pubkey)
-	logger.Criticalf(str)
+	publicKey = &privateKey.PublicKey
+	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
+	pr := string(pem.EncodeToMemory(privateKeyPEM))
+	logger.Criticalf("priv key %v", pr)
 
+	publicKeyDER, err := x509.MarshalPKIXPublicKey(publicKey)
+	if err != nil {
+		logger.Fatalf("PUBLIC %v", err)
+	}
+	publicKeyBlock := pem.Block{
+		Type:    "PUBLIC KEY",
+		Headers: nil,
+		Bytes:   publicKeyDER,
+	}
+	pb := string(pem.EncodeToMemory(&publicKeyBlock))
+	logger.Criticalf("pub key %v", pb)
 }
