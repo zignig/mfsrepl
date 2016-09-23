@@ -7,7 +7,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/weaveworks/mesh"
-	"time"
 )
 
 // Peer encapsulates state and implements mesh.Gossiper.
@@ -115,21 +114,10 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 }
 
 func (p *peer) SpoolMerge(delta mesh.GossipData) {
-	if delta != nil {
-		for node, values := range delta.(*state).set {
-			//fmt.Println("source ->", node)
-			for key, value := range values {
-				//fmt.Println("delta ", key, value)
-				u := ident{
-					Path:     key,
-					NewHash:  value,
-					Stamp:    time.Now(),
-					PeerName: node.String(),
-				}
-				p.update <- u
-			}
-		}
-	}
+	//	if delta != nil {
+	//		for node, values := range delta.(*state).set {
+	//		}
+	//	}
 }
 
 // Merge the gossiped data represented by buf into our state.

@@ -8,6 +8,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/boltdb/bolt",
+			"repository": "https://github.com/boltdb/bolt",
+			"revision": "fff57c100f4dea1905678da7e90d92429dff2904",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/op/go-logging",
 			"repository": "https://github.com/op/go-logging",
 			"revision": "970db520ece77730c7e4724c61121037378659d9",
