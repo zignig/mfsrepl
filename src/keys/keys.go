@@ -3,50 +3,43 @@ package keys
 // manage and build key sets
 // boltdb store for keys
 import (
-	"github.com/boltdb/bolt"
-	"github.com/op/go-logging"
-
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/gob"
 	"encoding/pem"
 	"time"
 )
 
-type LocalKey struct {
-	Private string
-	Public  string
-	Date    time.Time
+type StoredKey struct {
+	HavePrivate bool
+	Private     string
+	Public      string
+	Date        time.Time
 }
 
-type RemoteKey struct {
-	Public string
-	Date   time.Time
-}
-
-var logger = logging.MustGetLogger("keystore")
-
-type KeyStore struct {
-	db *bolt.DB
-}
-
-func NewKeyStore(path string) (ks *KeyStore, err error) {
-	logger.Criticalf("New Key Store %s", path)
-	ks = &KeyStore{}
-	ks.db, err = bolt.Open(path, 0600, nil)
+func (sk *StoredKey) Encode() (data []byte, err error) {
+	var b bytes.Buffer
+	enc := gob.NewEncoder(&b)
+	err = enc.Encode(sk)
 	if err != nil {
 		return nil, err
 	}
-
-	return ks, nil
-
+	return b.Bytes(), nil
 }
 
-func (ks KeyStore) Close() {
-	ks.db.Close()
+func Decode(data []byte) (sk *StoredKey, err error) {
+	b := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(b)
+	err = dec.Decode(&sk)
+	if err != nil {
+		return nil, err
+	}
+	return sk, err
 }
 
-func (ks KeyStore) NewLocalKey() (lc *LocalKey, err error) {
+func (ks *KeyStore) NewLocalKey() (lc *StoredKey, err error) {
 	var privateKey *rsa.PrivateKey
 	var publicKey *rsa.PublicKey
 	privateKey, err = rsa.GenerateKey(rand.Reader, 1024)
@@ -55,7 +48,11 @@ func (ks KeyStore) NewLocalKey() (lc *LocalKey, err error) {
 		return nil, err
 	}
 	publicKey = &privateKey.PublicKey
-	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
+
+	privateKeyPEM := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+	}
 	pr := string(pem.EncodeToMemory(privateKeyPEM))
 
 	publicKeyDER, err := x509.MarshalPKIXPublicKey(publicKey)
@@ -70,10 +67,11 @@ func (ks KeyStore) NewLocalKey() (lc *LocalKey, err error) {
 	}
 	pb := string(pem.EncodeToMemory(&publicKeyBlock))
 
-	lc = &LocalKey{
-		Private: pr,
-		Public:  pb,
-		Date:    time.Now(),
+	lc = &StoredKey{
+		HavePrivate: true,
+		Private:     pr,
+		Public:      pb,
+		Date:        time.Now(),
 	}
 	return lc, nil
 }
