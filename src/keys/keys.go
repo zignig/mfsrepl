@@ -6,17 +6,35 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/gob"
+	"encoding/hex"
 	"encoding/pem"
-	"time"
 )
 
 type StoredKey struct {
 	HavePrivate bool
 	Private     string
 	Public      string
-	Date        time.Time
+}
+
+// Key with finger print
+type DistKey struct {
+	PublicKey   string //pem format
+	Fingerprint string
+}
+
+// Public Key signed with itself for mesh gossip
+type SignedKey struct {
+	Key DistKey
+	Sig string
+}
+
+func (sk *StoredKey) Fingerprint() (fp string) {
+	data := sha256.Sum256([]byte(sk.Public))
+	fp = hex.EncodeToString(data[:])
+	return fp[:32]
 }
 
 func (sk *StoredKey) Encode() (data []byte, err error) {
@@ -71,7 +89,6 @@ func (ks *KeyStore) NewLocalKey() (lc *StoredKey, err error) {
 		HavePrivate: true,
 		Private:     pr,
 		Public:      pb,
-		Date:        time.Now(),
 	}
 	return lc, nil
 }

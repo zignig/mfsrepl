@@ -6,7 +6,7 @@ import (
 )
 
 func TestStore(t *testing.T) {
-	ks, err := NewKeyStore("./keys.db")
+	ks, err := NewKeyStore("./testing.db")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -16,6 +16,8 @@ func TestStore(t *testing.T) {
 	fmt.Println(data, err)
 	rk, err := Decode(data)
 	fmt.Println(rk, err)
+	ks.Insert(k, "local")
+	ks.ListKeys("local")
 	ks.Close()
 	t.Errorf("FAIL")
 
