@@ -20,6 +20,7 @@ func FingerPrint(data string) (fp string) {
 	fp = hex.EncodeToString(shaData[:])
 	return fp[:FingerPrintSize]
 }
+
 func (sigK *SignedKey) Encode() (b []byte, err error) {
 	b, err = json.MarshalIndent(sigK, " ", " ")
 	return

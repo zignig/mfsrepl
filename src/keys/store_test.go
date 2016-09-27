@@ -19,8 +19,7 @@ func TestStore(t *testing.T) {
 	ks.Insert(k, "local")
 	ks.ListKeys("local")
 	blob, _ := k.MakeSigned()
-	fmt.Println(blob)
-	//blob.Data[3] = 0x23
+	//blob.Data[90] = 0x0FF
 	err = blob.Check()
 	if err == nil {
 		fmt.Println("Valid Sig BLOB")
