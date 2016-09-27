@@ -10,6 +10,7 @@ import (
 	"crypto/x509"
 	"encoding/gob"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -38,7 +39,7 @@ type DistKey struct {
 
 // Public Key signed with itself for mesh gossip
 type SignedKey struct {
-	Data string
+	Data json.RawMessage
 	Sig  string
 }
 
