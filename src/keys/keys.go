@@ -70,21 +70,51 @@ func Decode(data []byte) (sk *StoredKey, err error) {
 	return sk, err
 }
 
+func GetPrivateFromPem(data string) (key *rsa.PrivateKey, err error) {
+	block, _ := pem.Decode([]byte(data))
+	if block == nil {
+		return nil, ErrBadPem
+	}
+	if block.Type != "RSA PRIVATE KEY" {
+		return nil, ErrBadPemType
+	}
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	err = privateKey.Validate()
+	if err != nil {
+		return nil, err
+	}
+	return privateKey, nil
+}
+
+func GetPublicFromPem(data string) (key *rsa.PublicKey, err error) {
+	block, _ := pem.Decode([]byte(data))
+	if block == nil {
+		return nil, ErrBadPem
+	}
+	if block.Type != "RSA PUBLIC KEY" {
+		return nil, ErrBadPemType
+	}
+	publicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return publicKey.(*rsa.PublicKey), nil
+}
+
 // takes a stored key and makes a distribution key
 func (sk *StoredKey) MakeSigned() (sig *SignedKey, err error) {
 	if sk.HavePrivate == false {
 		return nil, ErrNoPrivate
 	}
-	block, _ := pem.Decode([]byte(sk.Private))
-	if block == nil {
-		return nil, ErrBadPem
+	privKey, err := GetPrivateFromPem(sk.Private)
+	if err != nil {
+		return nil, err
 	}
-	fmt.Println(block.Type)
-	if block.Type != "RSA PRIVATE KEY" {
-		return nil, ErrBadPemType
-	}
-	fmt.Println(block.Headers)
-	//priv := block.Bytes
+
+	fmt.Println(privKey)
 
 	//hash := crypto.SHA1
 	//h := hash.New()
