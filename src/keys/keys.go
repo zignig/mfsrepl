@@ -4,6 +4,7 @@ package keys
 // boltdb store for keys
 import (
 	"bytes"
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -34,17 +35,17 @@ type StoredKey struct {
 // Key with finger print
 type DistKey struct {
 	PublicKey   string //pem format
-	Fingerprint string
+	FingerPrint string
 }
 
 // Public Key signed with itself for mesh gossip
 type SignedKey struct {
-	Data json.RawMessage
-	Sig  string
+	Data      json.RawMessage
+	Signature string
 }
 
 // Trucated finger SHA256 of the public key
-func (sk *StoredKey) Fingerprint() (fp string) {
+func (sk *StoredKey) FingerPrint() (fp string) {
 	data := sha256.Sum256([]byte(sk.Public))
 	fp = hex.EncodeToString(data[:])
 	return fp[:FingerPrintSize]
@@ -94,7 +95,8 @@ func GetPublicFromPem(data string) (key *rsa.PublicKey, err error) {
 	if block == nil {
 		return nil, ErrBadPem
 	}
-	if block.Type != "RSA PUBLIC KEY" {
+	if block.Type != "PUBLIC KEY" {
+		fmt.Println(block.Type)
 		return nil, ErrBadPemType
 	}
 	publicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -109,23 +111,35 @@ func (sk *StoredKey) MakeSigned() (sig *SignedKey, err error) {
 	if sk.HavePrivate == false {
 		return nil, ErrNoPrivate
 	}
+	//Get Private Key
 	privKey, err := GetPrivateFromPem(sk.Private)
 	if err != nil {
 		return nil, err
 	}
+	dk := &DistKey{
+		PublicKey:   sk.Public,
+		FingerPrint: sk.FingerPrint(),
+	}
+	jsonData, err := json.MarshalIndent(dk, " ", " ")
+	if err != nil {
+		return nil, err
+	}
+	hash := crypto.SHA256
+	h := hash.New()
+	h.Write(jsonData)
+	hashed := h.Sum(nil)
+	var opts rsa.PSSOptions
+	opts.SaltLength = rsa.PSSSaltLengthAuto
+	signature, err := rsa.SignPSS(rand.Reader, privKey, hash, hashed, &opts)
+	if err != nil {
+		return nil, err
+	}
 
-	fmt.Println(privKey)
-
-	//hash := crypto.SHA1
-	//h := hash.New()
-	//h.Write(data)
-	//hashed := h.Sum(nil)
-	//signature, err := rsa.SignPKCS1v15(rand.Reader, s.Key, hash, hashed)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	return nil, nil
+	sig = &SignedKey{
+		Data:      jsonData,
+		Signature: hex.EncodeToString(signature[:]),
+	}
+	return sig, nil
 }
 
 func (ks *KeyStore) NewLocalKey() (lc *StoredKey, err error) {

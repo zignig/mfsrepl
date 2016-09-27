@@ -64,7 +64,7 @@ func (ks *KeyStore) Insert(s *StoredKey, bucket string) error {
 			return err
 		}
 		// truncated sha of the public key
-		fp := s.Fingerprint()
+		fp := s.FingerPrint()
 		err = bucket.Put([]byte(fp), data)
 		if err != nil {
 			return err
