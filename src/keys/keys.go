@@ -38,8 +38,8 @@ type DistKey struct {
 
 // Public Key signed with itself for mesh gossip
 type SignedKey struct {
-	Key DistKey
-	Sig string
+	Data string
+	Sig  string
 }
 
 // Trucated finger SHA256 of the public key
