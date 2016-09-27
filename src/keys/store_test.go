@@ -18,7 +18,7 @@ func TestStore(t *testing.T) {
 	fmt.Println(rk, err)
 	ks.Insert(k, "local")
 	ks.ListKeys("local")
-	k.MakeDist()
+	k.MakeSigned()
 	ks.Close()
 	t.Errorf("FAIL")
 

@@ -70,7 +70,7 @@ func Decode(data []byte) (sk *StoredKey, err error) {
 }
 
 // takes a stored key and makes a distribution key
-func (sk *StoredKey) MakeDist() (sig *SignedKey, err error) {
+func (sk *StoredKey) MakeSigned() (sig *SignedKey, err error) {
 	if sk.HavePrivate == false {
 		return nil, ErrNoPrivate
 	}
