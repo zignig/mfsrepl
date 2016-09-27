@@ -45,6 +45,14 @@ func (ks *KeyStore) ListKeys(bucket string) (err error) {
 	return err
 }
 
+func (ks *KeyStore) GetPublic(fp, bucket string) (pub string, err error) {
+	err = ks.db.View(func(tx *bolt.Tx) error {
+		//bucket := tx.Bucket([]byte(bucket))
+		return nil
+	})
+	return pub, err
+}
+
 func (ks *KeyStore) Insert(s *StoredKey, bucket string) error {
 	err := ks.db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(bucket))
