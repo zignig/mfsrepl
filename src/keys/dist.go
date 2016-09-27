@@ -4,4 +4,5 @@ import ()
 
 func (dk *DistKey) Encode() (b []byte) {
 
+	return []byte("")
 }
