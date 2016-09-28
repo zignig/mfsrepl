@@ -6,8 +6,7 @@ update the mfs lib
 repl needs to
  - check where the info is coming from
  - actually sync the folders onto the local mfs
- - change the state to be a dictionary of string
- - use sha sum to detrimine change
+ - use sha sum to determine change
 
 later on 
  - give each node a key ( not the ipfs key )

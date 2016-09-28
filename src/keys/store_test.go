@@ -25,8 +25,8 @@ func TestStore(t *testing.T) {
 		fmt.Println("Valid Sig BLOB")
 	}
 	fmt.Println(err)
-	ks.PutPublic(blob, "stuff")
-	ks.ListKeys("stuff")
+	ks.PutPublic(blob, "public")
+	ks.ListKeys("public")
 	ks.Close()
 	t.Errorf("FAIL")
 

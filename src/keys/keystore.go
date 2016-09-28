@@ -38,12 +38,12 @@ func (ks *KeyStore) Close() {
 }
 
 func (ks *KeyStore) ListKeys(bucket string) (err error) {
+	fmt.Println("Bucket ", bucket)
 	err = ks.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucket))
 		c := bucket.Cursor()
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			fmt.Printf("key= %s\n", k)
-
+			fmt.Printf("key->%s\n", k)
 		}
 		return nil
 	})
