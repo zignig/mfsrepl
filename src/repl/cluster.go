@@ -7,6 +7,7 @@ import (
 	"github.com/weaveworks/mesh"
 	"net"
 	"os"
+	"refshare"
 
 	"strconv"
 	"time"
@@ -16,7 +17,7 @@ type Cluster struct {
 	config *Config
 	logger *logging.Logger
 	router *mesh.Router
-	peer   *peer
+	peer   *refshare.Peer
 	names  map[string]string
 }
 
@@ -47,9 +48,9 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 	}, name, config.Nickname, mesh.NullOverlay{}, wrap) //log.New(ioutil.Discard, "", 0))
 	cl.router = router
 
-	peer := newPeer(name, logger)
+	peer := refshare.NewPeer(name, logger)
 	gossip := router.NewGossip(config.Channel, peer)
-	peer.register(gossip)
+	peer.Register(gossip)
 	// bind the peer
 	cl.peer = peer
 	cl.names = make(map[string]string)
@@ -80,7 +81,7 @@ func (cl *Cluster) Stop() {
 func (cl *Cluster) Peers() {
 	cl.GetNames()
 	for i, j := range cl.router.Peers.Descriptions() {
-		cl.logger.Infof(" %v , %v [%v] -> %v ", i, j.NickName, j.Name, cl.peer.st.set[j.Name])
+		cl.logger.Infof(" %v , %v [%v] ", i, j.NickName, j.Name)
 		//cl.logger.Infof("NAMES %v", cl.names)
 	}
 }
