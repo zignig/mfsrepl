@@ -11,11 +11,11 @@ func TestStore(t *testing.T) {
 		fmt.Println(err)
 	}
 	k, err := ks.NewLocalKey()
-	fmt.Println(k, err)
-	data, err := k.Encode()
-	fmt.Println(data, err)
-	rk, err := Decode(data)
-	fmt.Println(rk, err)
+	//fmt.Println(k, err)
+	//data, err := k.Encode()
+	//fmt.Println(data, err)
+	//rk, err := Decode(data)
+	//fmt.Println(rk, err)
 	ks.Insert(k, "local")
 	ks.ListKeys("local")
 	blob, _ := k.MakeSigned()
@@ -25,8 +25,8 @@ func TestStore(t *testing.T) {
 		fmt.Println("Valid Sig BLOB")
 	}
 	fmt.Println(err)
-	//sk, err := blob.Encode()
-	//fmt.Println(string(sk), err)
+	ks.PutPublic(blob, "stuff")
+	ks.ListKeys("stuff")
 	ks.Close()
 	t.Errorf("FAIL")
 

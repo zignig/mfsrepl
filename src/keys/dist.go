@@ -1,9 +1,11 @@
 package keys
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/rsa"
 	"crypto/sha256"
+	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -15,15 +17,61 @@ var (
 	ErrFingerPrintCheck = errors.New("Finger Print does not match")
 )
 
+// Key with finger print
+type DistKey struct {
+	PublicKey   string //pem format
+	FingerPrint string
+}
+
+// Public Key signed with itself for mesh gossip
+type SignedKey struct {
+	Data      json.RawMessage
+	Signature string
+}
+
 func FingerPrint(data string) (fp string) {
 	shaData := sha256.Sum256([]byte(data))
 	fp = hex.EncodeToString(shaData[:])
 	return fp[:FingerPrintSize]
 }
 
-func (sigK *SignedKey) Encode() (b []byte, err error) {
-	b, err = json.MarshalIndent(sigK, " ", " ")
-	return
+func (sigK *SignedKey) Encode() (data []byte, err error) {
+	var b bytes.Buffer
+	enc := gob.NewEncoder(&b)
+	err = enc.Encode(sigK)
+	if err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
+func DecodeSignedKey(data []byte) (sigK *SignedKey, err error) {
+	b := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(b)
+	err = dec.Decode(&sigK)
+	if err != nil {
+		return nil, err
+	}
+	return sigK, err
+}
+
+func (sigK *SignedKey) GetFingerPrint() (fp string, err error) {
+	dk, err := sigK.GetDistKey()
+	if err != nil {
+		return "", err
+	}
+	return dk.FingerPrint, nil
+}
+
+func (sigK *SignedKey) GetDistKey() (dk *DistKey, err error) {
+	data := sigK.Data
+	dk = &DistKey{}
+	// Unmarshall the json
+	err = json.Unmarshal(data, dk)
+	if err != nil {
+		return nil, err
+	}
+	return dk, nil
 }
 
 func (sigK *SignedKey) Check() (err error) {

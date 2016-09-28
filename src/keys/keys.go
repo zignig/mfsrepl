@@ -32,18 +32,6 @@ type StoredKey struct {
 	Public      string
 }
 
-// Key with finger print
-type DistKey struct {
-	PublicKey   string //pem format
-	FingerPrint string
-}
-
-// Public Key signed with itself for mesh gossip
-type SignedKey struct {
-	Data      json.RawMessage
-	Signature string
-}
-
 // Trucated finger SHA256 of the public key
 func (sk *StoredKey) FingerPrint() (fp string) {
 	data := sha256.Sum256([]byte(sk.Public))
