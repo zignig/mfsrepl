@@ -31,6 +31,8 @@ func main() {
 	logger.Critical("MFS replicator")
 	cluster := NewCluster(config, logger)
 
+	// Attach the widgets
+
 	// Spin up the mesh
 	go func() {
 		cluster.Start()

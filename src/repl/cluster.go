@@ -57,6 +57,11 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 	return cl
 }
 
+func (cl *Cluster) AttachGossiper(widget mesh.Gossiper, channel string) (G mesh.Gossip) {
+	gossip := cl.router.NewGossip(channel, widget)
+	return gossip
+}
+
 func (cl *Cluster) GetNames() {
 	stat := mesh.NewStatus(cl.router)
 	for _, j := range stat.Peers {

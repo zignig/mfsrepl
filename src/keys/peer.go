@@ -68,23 +68,18 @@ func (p *peer) register(send mesh.Gossip) {
 	p.actions <- func() { p.send = send }
 }
 
-// Return the current value of the counter.
-func (p *peer) get() refs {
-	return p.st.get()
-}
-
-func (p *peer) Insert(name, value string) (result refs) {
+func (p *peer) Insert(sigK *SignedKey) (result *SignedKey) {
 	c := make(chan struct{})
 	p.actions <- func() {
 		defer close(c)
-		st := p.st.insert(name, value)
+		st := p.st.insert(sigK)
 		//p.logger.Debugf("Insert data %v", st)
 		if p.send != nil {
 			p.send.GossipBroadcast(st)
 		} else {
 			p.logger.Critical("no sender configured; not broadcasting update right now")
 		}
-		result = st.get()
+		//		result = st.get()
 	}
 	<-c
 	return result
@@ -104,7 +99,7 @@ func (p *peer) Gossip() (complete mesh.GossipData) {
 // Merge the gossiped data represented by buf into our state.
 // Return the state information that was modified.
 func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
-	var set map[mesh.PeerName]refs
+	var set map[string]*SignedKey
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		return nil, err
 	}
@@ -123,7 +118,7 @@ func (p *peer) SpoolMerge(delta mesh.GossipData) {
 // Merge the gossiped data represented by buf into our state.
 // Return the state information that was modified.
 func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.GossipData, err error) {
-	var set map[mesh.PeerName]refs
+	var set map[string]*SignedKey
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -136,7 +131,7 @@ func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.G
 // Merge the gossiped data represented by buf into our state.
 func (p *peer) OnGossipUnicast(src mesh.PeerName, buf []byte) error {
 	p.logger.Info(" unicast , %s", src)
-	var set map[mesh.PeerName]refs
+	var set map[string]*SignedKey
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		return err
 	}

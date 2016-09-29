@@ -10,15 +10,12 @@ import (
 	"github.com/weaveworks/mesh"
 )
 
-var log = logging.MustGetLogger("state")
-
-type refs map[string]string
+var log = logging.MustGetLogger("keyset")
 
 // state is an implementation of a G-counter.
 type state struct {
-	mtx  sync.RWMutex
-	set  map[mesh.PeerName]refs
-	self mesh.PeerName
+	mtx sync.RWMutex
+	set map[string]*SignedKey
 }
 
 // state implements GossipData.
@@ -29,42 +26,26 @@ var _ mesh.GossipData = &state{}
 // Other peers will populate us with data.
 func newState(self mesh.PeerName) *state {
 	return &state{
-		set:  map[mesh.PeerName]refs{},
-		self: self,
+		set: make(map[string]*SignedKey),
 	}
 }
 
 func (st *state) String() string {
 	s := "\n"
-	for i, j := range st.set {
-		s += i.String() + "\n"
-		for k, l := range j {
-			s += "\t" + k + " -> " + l + "\n"
-		}
+	for i, _ := range st.set {
+		s += i + "\n"
 	}
 	return s
 }
 
-func (st *state) get() (result refs) {
+func (st *state) get(fp string) (result *SignedKey) {
 	st.mtx.RLock()
 	defer st.mtx.RUnlock()
-	return st.set[st.self]
+	return st.set[fp]
 }
 
-func (st *state) insert(name, value string) (complete *state) {
-	st.mtx.Lock()
-	defer st.mtx.Unlock()
-	cur, ok := st.set[st.self]
-	if ok {
-		cur[name] = value
-	} else {
-		r := refs{}
-		r[name] = value
-		st.set[st.self] = r
-	}
-	return &state{
-		set: st.set,
-	}
+func (st *state) insert(sigK *SignedKey) (state *state) {
+	return
 }
 
 func (st *state) copy() *state {
@@ -95,7 +76,7 @@ func (st *state) Merge(other mesh.GossipData) (complete mesh.GossipData) {
 
 // Merge the set into our state, abiding increment-only semantics.
 // Return a non-nil mesh.GossipData representation of the received set.
-func (st *state) mergeReceived(set map[mesh.PeerName]refs) (received mesh.GossipData) {
+func (st *state) mergeReceived(set map[string]*SignedKey) (received mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
 
@@ -110,7 +91,7 @@ func (st *state) mergeReceived(set map[mesh.PeerName]refs) (received mesh.Gossip
 
 // Return any key/values that have been mutated, or nil if nothing changed.
 // TODO this needs to check sub keys
-func (st *state) mergeDelta(set map[mesh.PeerName]refs) (delta mesh.GossipData) {
+func (st *state) mergeDelta(set map[string]*SignedKey) (delta mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
 	for peer, v := range set {
@@ -133,7 +114,7 @@ func (st *state) mergeDelta(set map[mesh.PeerName]refs) (delta mesh.GossipData) 
 
 // Merge the set into our state, abiding increment-only semantics.
 // Return our resulting, complete state.
-func (st *state) mergeComplete(set map[mesh.PeerName]refs) (complete mesh.GossipData) {
+func (st *state) mergeComplete(set map[string]*SignedKey) (complete mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
 

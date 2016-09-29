@@ -17,7 +17,8 @@ func TestStore(t *testing.T) {
 	//rk, err := Decode(data)
 	//fmt.Println(rk, err)
 	ks.Insert(k, "local")
-	ks.ListKeys("local")
+	local, _ := ks.ListKeys("local")
+	fmt.Println(local)
 	blob, _ := k.MakeSigned()
 	//blob.Data[90] = 0x0FF
 	err = blob.Check()
@@ -26,7 +27,8 @@ func TestStore(t *testing.T) {
 	}
 	fmt.Println(err)
 	ks.PutPublic(blob, "public")
-	ks.ListKeys("public")
+	public, _ := ks.ListKeys("public")
+	fmt.Println(public)
 	ks.Close()
 	t.Errorf("FAIL")
 

@@ -37,17 +37,19 @@ func (ks *KeyStore) Close() {
 	ks.db.Close()
 }
 
-func (ks *KeyStore) ListKeys(bucket string) (err error) {
+func (ks *KeyStore) ListKeys(bucket string) (items []string, err error) {
+	items = make([]string, 0)
 	fmt.Println("Bucket ", bucket)
 	err = ks.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucket))
 		c := bucket.Cursor()
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
 			fmt.Printf("key->%s\n", k)
+			items = append(items, string(k))
 		}
 		return nil
 	})
-	return err
+	return items, err
 }
 
 func (ks *KeyStore) GetPublic(fp, bucket string) (sigK *SignedKey, err error) {
