@@ -192,11 +192,11 @@ func (fs *Share) Mfs(path string) (s *Stat, err error) {
 	val := url.Values{}
 	val.Set("arg", path)
 	htr, err := fs.Request("files/stat", val)
-	defer htr.Body.Close()
 	if err != nil {
 		logger.Error(err)
 		return nil, err
 	}
+	defer htr.Body.Close()
 	data, _ := ioutil.ReadAll(htr.Body)
 	merr := json.Unmarshal(data, &s)
 	if merr != nil {
