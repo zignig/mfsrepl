@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/op/go-logging"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/op/go-logging"
 	"mfs"
+	"refshare"
 )
 
 var logger *logging.Logger
@@ -32,7 +33,8 @@ func main() {
 	cluster := NewCluster(config, logger)
 
 	// Attach the widgets
-
+	refPeer := refshare.NewPeer(cluster.Name, logger)
+	cluster.Attach(refPeer, config.Channel)
 	// Spin up the mesh
 	go func() {
 		cluster.Start()
@@ -53,7 +55,7 @@ func main() {
 	// Watch the shares
 	go shares.Watch(10)
 	// Run the primary event loop
-	go Process(cluster, shares, 10)
+	go Process(cluster, refPeer, shares, 10)
 	// Run and Wait
 	errs := make(chan error, 1)
 	go func() {

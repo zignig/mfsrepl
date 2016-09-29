@@ -7,17 +7,17 @@ import (
 	"github.com/weaveworks/mesh"
 	"net"
 	"os"
-	"refshare"
 
 	"strconv"
 	"time"
 )
 
 type Cluster struct {
+	Name mesh.PeerName
+
 	config *Config
 	logger *logging.Logger
 	router *mesh.Router
-	peer   *refshare.Peer
 	names  map[string]string
 }
 
@@ -35,6 +35,7 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 	if err != nil {
 		logger.Fatalf("%v", err)
 	}
+	cl.Name = name
 	// log wrapper for mesh internal logger
 	wrap := NewLogWrap(logger)
 	router := mesh.NewRouter(mesh.Config{
@@ -48,18 +49,24 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 	}, name, config.Nickname, mesh.NullOverlay{}, wrap) //log.New(ioutil.Discard, "", 0))
 	cl.router = router
 
-	peer := refshare.NewPeer(name, logger)
-	gossip := router.NewGossip(config.Channel, peer)
-	peer.Register(gossip)
+	//peer := refshare.NewPeer(name, logger)
+	//gossip := router.NewGossip(config.Channel, peer)
+	//peer.Register(gossip)
 	// bind the peer
-	cl.peer = peer
+	//cl.peer = peer
 	cl.names = make(map[string]string)
 	return cl
 }
 
-func (cl *Cluster) AttachGossiper(widget mesh.Gossiper, channel string) (G mesh.Gossip) {
+// Crazy interface hack
+type Widget interface {
+	mesh.Gossiper
+	Register(send mesh.Gossip)
+}
+
+func (cl *Cluster) Attach(widget Widget, channel string) {
 	gossip := cl.router.NewGossip(channel, widget)
-	return gossip
+	widget.Register(gossip)
 }
 
 func (cl *Cluster) GetNames() {

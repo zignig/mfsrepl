@@ -2,15 +2,16 @@ package main
 
 import (
 	"mfs"
+	"refshare"
 	//	"time"
 )
 
 // Process
-func Process(cluster *Cluster, share *mfs.Share, interval int) {
+func Process(cluster *Cluster, peer *refshare.Peer, share *mfs.Share, interval int) {
 	//c := time.Tick(time.Duration(interval) * time.Second)
 	// get the channels from the constructs
 	shareUpdates := share.UpdateChannel()
-	remoteUpdates := cluster.peer.UpdateChannel()
+	remoteUpdates := peer.UpdateChannel()
 	// loop and wait for events
 	cluster.logger.Info("Starting Main Loop")
 	for {
@@ -19,7 +20,7 @@ func Process(cluster *Cluster, share *mfs.Share, interval int) {
 		//	cluster.logger.Debugf("%v", cluster.peer.st)
 		case shareupdate := <-shareUpdates:
 			cluster.logger.Critical("SHARE UPDATE %v", shareupdate)
-			cluster.peer.Insert(shareupdate.Path, shareupdate.NewHash)
+			peer.Insert(shareupdate.Path, shareupdate.NewHash)
 		case update := <-remoteUpdates:
 			// update the names
 			cluster.GetNames()
