@@ -1,3 +1,11 @@
+keystuff
+ - rationalize key stuff
+ - only send some of the keys each gossip run
+ - set up onion routing to obfuscate the origin of keys
+ - keys
+   - web of trust
+   - key expiry
+ - dump keysets to ipfs (maybe)
 update the mfs lib
  - create directories
  - copy into place
@@ -9,7 +17,6 @@ repl needs to
  - use sha sum to determine change
 
 later on 
- - give each node a key ( not the ipfs key )
  - republish to ipns
  - use ipfs key discovery to find nodes that are sharing
  - work out how to diff merkel dags so folders can be converged
