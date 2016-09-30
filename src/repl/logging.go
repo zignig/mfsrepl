@@ -6,11 +6,10 @@ import (
 	"os"
 )
 
-//var logger = logging.MustGetLogger("mfsrepl")
 var globallevel int
 
 var format = logging.MustStringFormatter(
-	"%{color} %{id:03x} %{shortfunc:13s} %{level:8s} %{color:reset} %{message}",
+	"%{color} %{id:03x} %{shortpkg:8s} %{shortfunc:13s} %{level:8s} %{color:reset} %{message}",
 )
 
 //"%{color}%{time:0102 15:04:05.000}  %{shortfunc:13s} %{level:8s} %{id:03x}%{color:reset} %{message}",

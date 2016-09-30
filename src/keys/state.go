@@ -24,7 +24,7 @@ var _ mesh.GossipData = &state{}
 // Construct an empty state object, ready to receive updates.
 // This is suitable to use at program start.
 // Other peers will populate us with data.
-func newState(self mesh.PeerName) *state {
+func newState() *state {
 	return &state{
 		set: make(map[string]*SignedKey),
 	}

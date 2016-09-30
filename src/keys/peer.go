@@ -13,16 +13,13 @@ import (
 // It should be passed to mesh.Router.NewGossip,
 // and the resulting Gossip registered in turn,
 // before calling mesh.Router.Start.
-type ident struct {
-	value string
-}
+var logger = logging.MustGetLogger("keys")
 
 type peer struct {
 	st      *state
 	send    mesh.Gossip
 	actions chan<- func()
 	quit    chan struct{}
-	update  chan ident
 	logger  *logging.Logger
 }
 
@@ -32,15 +29,15 @@ var _ mesh.Gossiper = &peer{}
 // Construct a peer with empty state.
 // Be sure to register a channel, later,
 // so we can make outbound communication.
-func newPeer(self mesh.PeerName, logger *logging.Logger) *peer {
+func NewPeer(logger *logging.Logger) *peer {
 	actions := make(chan func())
 	p := &peer{
-		st:      newState(self),
+		st:      newState(),
 		send:    nil, // must .register() later
 		actions: actions,
 		quit:    make(chan struct{}),
-		update:  make(chan ident, 10),
-		logger:  logger,
+		//update:  make(chan ident, 10),
+		logger: logger,
 	}
 	go p.loop(actions)
 	return p
@@ -48,9 +45,9 @@ func newPeer(self mesh.PeerName, logger *logging.Logger) *peer {
 
 // getUpdate
 // return the update channel
-func (p *peer) UpdateChannel() (update chan ident) {
-	return p.update
-}
+//func (p *peer) UpdateChannel() (update chan ident) {
+//	return p.update
+//}
 
 func (p *peer) loop(actions <-chan func()) {
 	for {
@@ -64,7 +61,7 @@ func (p *peer) loop(actions <-chan func()) {
 }
 
 // register the result of a mesh.Router.NewGossip.
-func (p *peer) register(send mesh.Gossip) {
+func (p *peer) Register(send mesh.Gossip) {
 	p.actions <- func() { p.send = send }
 }
 
@@ -91,6 +88,7 @@ func (p *peer) stop() {
 
 // Return a copy of our complete state.
 func (p *peer) Gossip() (complete mesh.GossipData) {
+	logger.Critical("KEY GOSSIP")
 	complete = p.st.copy()
 	//p.logger.Printf("Gossip => complete %v", complete.(*state).set)
 	return complete

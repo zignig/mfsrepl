@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"keys"
 	"mfs"
 	"refshare"
 )
@@ -26,7 +27,7 @@ func main() {
 
 	config := LoadConfig(*configPath, *peer, *password, *nickname)
 	LogSetup(*level, "mfsrepl")
-	logging.SetLevel(logging.DEBUG, "mfs")
+	logging.SetLevel(logging.CRITICAL, "mfs")
 
 	logger := GetLogger("cluster")
 	logger.Critical("MFS replicator")
@@ -35,6 +36,9 @@ func main() {
 	// Attach the widgets
 	refPeer := refshare.NewPeer(cluster.Name, logger)
 	cluster.Attach(refPeer, config.Channel)
+
+	keyPeer := keys.NewPeer(logger)
+	cluster.Attach(keyPeer, "keybase")
 	// Spin up the mesh
 	go func() {
 		cluster.Start()

@@ -7,10 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
-	"github.com/op/go-logging"
 )
-
-var logger = logging.MustGetLogger("keystore")
 
 var (
 	ErrNoKey = errors.New("Key does not exist")

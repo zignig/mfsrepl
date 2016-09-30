@@ -19,7 +19,7 @@ func Process(cluster *Cluster, peer *refshare.Peer, share *mfs.Share, interval i
 		//case <-c:
 		//	cluster.logger.Debugf("%v", cluster.peer.st)
 		case shareupdate := <-shareUpdates:
-			cluster.logger.Critical("SHARE UPDATE %v", shareupdate)
+			cluster.logger.Debug("SHARE UPDATE %v", shareupdate)
 			peer.Insert(shareupdate.Path, shareupdate.NewHash)
 		case update := <-remoteUpdates:
 			// update the names
@@ -29,11 +29,11 @@ func Process(cluster *Cluster, peer *refshare.Peer, share *mfs.Share, interval i
 			val, ok := cluster.names[update.PeerName]
 			if ok {
 				update.PeerName = val
-				cluster.logger.Critical("INCOMING UPDATE %v", update)
+				cluster.logger.Debug("INCOMING UPDATE %v", update)
 				share.SubmitUpdate(update)
 			}
 			//share.Mkdir("/"+update.Path+"/"+update.PeerName, true)
-			cluster.logger.Critical("UPDATE FINISHED")
+			cluster.logger.Debug("UPDATE FINISHED")
 		}
 	}
 }

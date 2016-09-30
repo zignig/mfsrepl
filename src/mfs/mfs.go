@@ -99,7 +99,7 @@ func (fs *Share) CheckChanges() {
 				}
 				fs.Updates <- update
 				fs.watch[i] = stat.Hash
-				logger.Criticalf("HASH has changed! %v", update)
+				logger.Info("HASH has changed! %v", update)
 			}
 		}
 	}
@@ -141,7 +141,7 @@ func (fs *Share) StampBackup() string {
 	const layout = "/2006/01/02/15/04/"
 	n := time.Now()
 	dateBack := n.Format(layout)
-	logger.Critical("Backup ", dateBack)
+	logger.Info("Backup ", dateBack)
 	fs.Mkdir(dateBack, true)
 	return dateBack
 }
