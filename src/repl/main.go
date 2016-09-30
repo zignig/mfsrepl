@@ -22,6 +22,7 @@ func main() {
 		peer       = flag.String("peer", "", "peer address")
 		nickname   = flag.String("nickname", "", "Nickname for the node")
 		level      = flag.Int("log", 2, "Logging Level")
+		refs       = flag.Bool("refs", false, "refs active")
 	)
 	flag.Parse()
 
@@ -34,8 +35,11 @@ func main() {
 	cluster := NewCluster(config, logger)
 
 	// Attach the widgets
-	refPeer := refshare.NewPeer(cluster.Name, logger)
-	cluster.Attach(refPeer, config.Channel)
+	var refPeer *refshare.Peer
+	if *refs {
+		refPeer = refshare.NewPeer(cluster.Name, logger)
+		cluster.Attach(refPeer, config.Channel)
+	}
 
 	keyPeer := keys.NewPeer(logger)
 	cluster.Attach(keyPeer, "keybase")
@@ -54,12 +58,14 @@ func main() {
 	// Show a list every 10 seconds
 	go cluster.Info(30)
 
-	// Create the Shares
-	shares := mfs.NewShare(config.Shares)
-	// Watch the shares
-	go shares.Watch(10)
-	// Run the primary event loop
-	go Process(cluster, refPeer, shares, 10)
+	if *refs {
+		// Create the Shares
+		shares := mfs.NewShare(config.Shares)
+		// Watch the shares
+		go shares.Watch(10)
+		// Run the primary event loop
+		go Process(cluster, refPeer, shares, 10)
+	}
 	// Run and Wait
 	errs := make(chan error, 1)
 	go func() {

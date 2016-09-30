@@ -90,6 +90,7 @@ func (p *peer) stop() {
 func (p *peer) Gossip() (complete mesh.GossipData) {
 	logger.Critical("KEY GOSSIP")
 	complete = p.st.copy()
+	logger.Criticalf("data -> %v\n", complete)
 	//p.logger.Printf("Gossip => complete %v", complete.(*state).set)
 	return complete
 }
