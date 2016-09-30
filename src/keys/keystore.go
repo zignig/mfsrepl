@@ -34,6 +34,16 @@ func (ks *KeyStore) Close() {
 	ks.db.Close()
 }
 
+func (ks *KeyStore) TryInsert(sigK *SignedKey) (err error) {
+	//TODO try to insert key
+	return
+}
+
+func (ks *KeyStore) HaveKey(sigK *SignedKey) (have bool) {
+	//TODO do I have this key
+	return
+}
+
 func (ks *KeyStore) ListKeys(bucket string) (items []string, err error) {
 	items = make([]string, 0)
 	fmt.Println("Bucket ", bucket)

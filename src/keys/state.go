@@ -101,13 +101,18 @@ func (st *state) mergeReceived(set map[string]*SignedKey) (received mesh.GossipD
 func (st *state) mergeDelta(set map[string]*SignedKey) (delta mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()
-	for peer, v := range set {
+	for fp, v := range set {
 		// Do we have the key in our data
-		if _, ok := st.set[peer]; ok {
-			delete(set, peer) // requirement: it's not part of a delta
+		//logger.Criticalf("MERGE %v %v", peer, v)
+		err := v.Check()
+		if err == nil {
+			logger.Criticalf("GOOD KEY %v", fp)
+		}
+		if _, ok := st.set[fp]; ok {
+			delete(set, fp) // requirement: it's not part of a delta
 			continue
 		}
-		st.set[peer] = v
+		st.set[fp] = v
 	}
 
 	//log.Debugf("%v -> %v", set, delta)
