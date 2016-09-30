@@ -41,22 +41,26 @@ func (ks *KeyStore) ListKeys(bucket string) (items []string, err error) {
 		bucket := tx.Bucket([]byte(bucket))
 		c := bucket.Cursor()
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			fmt.Printf("key->%s\n", k)
+			//fmt.Printf("key->%s\n", k)
 			items = append(items, string(k))
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	return items, err
 }
 
 func (ks *KeyStore) GetPublic(fp, bucket string) (sigK *SignedKey, err error) {
+	logger.Criticalf("%s", fp)
 	err = ks.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucket))
 		data := bucket.Get([]byte(fp))
 		if data == nil {
 			return ErrNoKey
 		}
-		sigK, err := DecodeSignedKey(data)
+		sigK, err = DecodeSignedKey(data)
 		if err != nil {
 			return err
 		}

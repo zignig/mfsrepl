@@ -45,6 +45,13 @@ func (st *state) get(fp string) (result *SignedKey) {
 }
 
 func (st *state) insert(sigK *SignedKey) (state *state) {
+	st.mtx.RLock()
+	defer st.mtx.RUnlock()
+	fp, err := sigK.GetFingerPrint()
+	if err != nil {
+		logger.Critical(err)
+	}
+	st.set[fp] = sigK
 	return
 }
 

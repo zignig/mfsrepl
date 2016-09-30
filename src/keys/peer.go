@@ -16,11 +16,12 @@ import (
 var logger = logging.MustGetLogger("keys")
 
 type peer struct {
-	st      *state
-	send    mesh.Gossip
-	actions chan<- func()
-	quit    chan struct{}
-	logger  *logging.Logger
+	st       *state
+	send     mesh.Gossip
+	actions  chan<- func()
+	quit     chan struct{}
+	logger   *logging.Logger
+	keyStore *KeyStore
 }
 
 // peer implements mesh.Gossiper.
@@ -29,7 +30,7 @@ var _ mesh.Gossiper = &peer{}
 // Construct a peer with empty state.
 // Be sure to register a channel, later,
 // so we can make outbound communication.
-func NewPeer(logger *logging.Logger) *peer {
+func NewPeer(keypath string, logger *logging.Logger) *peer {
 	actions := make(chan func())
 	p := &peer{
 		st:      newState(),
@@ -39,6 +40,12 @@ func NewPeer(logger *logging.Logger) *peer {
 		//update:  make(chan ident, 10),
 		logger: logger,
 	}
+	ks, err := NewKeyStore(keypath)
+	if err != nil {
+		logger.Fatalf("Keystore fail %v", err)
+	}
+	p.keyStore = ks
+	p.loadAllKeys()
 	go p.loop(actions)
 	return p
 }
@@ -57,6 +64,19 @@ func (p *peer) loop(actions <-chan func()) {
 		case <-p.quit:
 			return
 		}
+	}
+}
+
+func (p *peer) loadAllKeys() {
+	keys, err := p.keyStore.ListKeys("public")
+	if err != nil {
+		logger.Critical(err)
+	}
+	for _, i := range keys {
+		logger.Critical("Load Key %s", i)
+		k, _ := p.keyStore.GetPublic(i, "public")
+		//fmt.Println(k, e)
+		p.st.insert(k)
 	}
 }
 

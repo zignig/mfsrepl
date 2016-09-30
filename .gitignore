@@ -2,3 +2,4 @@ pkg/
 bin/
 repl.toml
 src/keys/testing.db
+keystore.db
