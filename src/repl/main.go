@@ -13,7 +13,7 @@ import (
 	"refshare"
 )
 
-var logger *logging.Logger
+var logger = logging.MustGetLogger("main")
 
 func main() {
 	var (

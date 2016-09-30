@@ -5,9 +5,12 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/BurntSushi/toml"
+	"github.com/op/go-logging"
 	"mfs"
 	"os"
 )
+
+var confLogger = logging.MustGetLogger("config")
 
 type Remote struct {
 	Pin       bool
@@ -52,6 +55,7 @@ func NewConfig(peer, password, nickname string) (c *Config) {
 
 func LoadConfig(path, peer, password, nickname string) (c *Config) {
 	if _, err := toml.DecodeFile(path, &c); err != nil {
+		confLogger.Critical(err)
 		c = NewConfig(peer, password, nickname)
 		c.Save(path)
 	}
@@ -71,12 +75,12 @@ func (c *Config) Save(path string) {
 	buf := new(bytes.Buffer)
 	err := toml.NewEncoder(buf).Encode(c)
 	if err != nil {
-		logger.Errorf("%v", err)
+		confLogger.Errorf("%v", err)
 	}
 	f, err := os.Create(path)
 	defer f.Close()
 	if err != nil {
-		logger.Errorf("%v", err)
+		confLogger.Errorf("%v", err)
 	}
 	f.Write(buf.Bytes())
 }
