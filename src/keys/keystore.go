@@ -5,8 +5,9 @@ package keys
 import (
 	"crypto/rsa"
 	"errors"
-	"fmt"
+	//"fmt"
 	"github.com/boltdb/bolt"
+	"sync"
 )
 
 var (
@@ -16,6 +17,9 @@ var (
 type KeyStore struct {
 	db      *bolt.DB
 	private *rsa.PrivateKey
+
+	mapLock sync.Mutex
+	keySets map[string]*state // reuse state for key cache
 }
 
 func NewKeyStore(path string) (ks *KeyStore, err error) {
@@ -25,28 +29,77 @@ func NewKeyStore(path string) (ks *KeyStore, err error) {
 	if err != nil {
 		return nil, err
 	}
-
+	ks.makeBucket("private")
+	ks.makeBucket("public")
+	ks.keySets = make(map[string]*state)
 	return ks, nil
+}
 
+func (ks *KeyStore) makeBucket(bucket string) (err error) {
+	err = ks.db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(bucket))
+		return err
+	})
+	return err
 }
 
 func (ks *KeyStore) Close() {
 	ks.db.Close()
 }
 
-func (ks *KeyStore) TryInsert(sigK *SignedKey) (err error) {
-	//TODO try to insert key
-	return
+func (ks *KeyStore) TryInsert(sigK *SignedKey, bucket string) (err error) {
+	logger.Critical(ks)
+	err = sigK.Check()
+	if err != nil {
+		return err
+	}
+	err = ks.PutPublic(sigK, bucket)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (ks *KeyStore) HaveKey(sigK *SignedKey) (have bool) {
-	//TODO do I have this key
-	return
+func (ks *KeyStore) HaveKey(fp string, bucket string) (have bool) {
+	_, have = ks.CacheKey(fp, bucket)
+	return have
+}
+
+func (ks *KeyStore) CacheKey(fp string, bucket string) (sigK *SignedKey, have bool) {
+	ks.mapLock.Lock()
+	defer ks.mapLock.Unlock()
+	// a state set for each bucket name
+	var keySet *state
+	// does the bucket exist
+	_, ok := ks.keySets[bucket]
+	if ok {
+		keySet = ks.keySets[bucket]
+	} else {
+		// does not exist create the bucket
+		ks.keySets[bucket] = newState()
+		keySet = ks.keySets[bucket]
+	}
+	// check for the key in the bucket
+	keySet.mtx.Lock()
+	defer keySet.mtx.Unlock()
+
+	sigK, ok = keySet.set[fp]
+	// do we have the key
+	if ok {
+		return sigK, true
+	}
+	// if not load it
+	sigK, err := ks.GetPublic(fp, bucket)
+	if err != nil {
+		return nil, false
+	}
+	// put the key into the map
+	keySet.set[fp] = sigK
+	return sigK, true
 }
 
 func (ks *KeyStore) ListKeys(bucket string) (items []string, err error) {
 	items = make([]string, 0)
-	fmt.Println("Bucket ", bucket)
 	err = ks.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucket))
 		c := bucket.Cursor()
@@ -63,7 +116,7 @@ func (ks *KeyStore) ListKeys(bucket string) (items []string, err error) {
 }
 
 func (ks *KeyStore) GetPublic(fp, bucket string) (sigK *SignedKey, err error) {
-	logger.Criticalf("%s", fp)
+	//logger.Criticalf("%s", fp)
 	err = ks.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucket))
 		data := bucket.Get([]byte(fp))
@@ -74,6 +127,7 @@ func (ks *KeyStore) GetPublic(fp, bucket string) (sigK *SignedKey, err error) {
 		if err != nil {
 			return err
 		}
+		//Make sure the key is valid
 		err = sigK.Check()
 		if err != nil {
 			return err

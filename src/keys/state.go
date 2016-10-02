@@ -12,7 +12,6 @@ import (
 
 var log = logging.MustGetLogger("keyset")
 
-// state is an implementation of a G-counter.
 type state struct {
 	mtx sync.RWMutex
 	set map[string]*SignedKey
