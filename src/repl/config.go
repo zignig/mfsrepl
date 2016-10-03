@@ -55,8 +55,9 @@ func NewConfig(peer, password, nickname string) (c *Config) {
 
 func LoadConfig(path, peer, password, nickname string) (c *Config) {
 	if _, err := toml.DecodeFile(path, &c); err != nil {
-		confLogger.Critical(err)
+		fmt.Println(c, err)
 		c = NewConfig(peer, password, nickname)
+		fmt.Println(c)
 		c.Save(path)
 	}
 	return

@@ -32,7 +32,7 @@ type Share struct {
 	Source  string
 	watch   map[string]string
 	paths   map[string]string
-	Updates chan Update
+	updates chan Update
 	lock    sync.Mutex
 }
 
@@ -44,7 +44,7 @@ func NewShare(bind map[string]*Share) (fs *Share) {
 	fs = &Share{}
 	fs.watch = make(map[string]string)
 	fs.paths = make(map[string]string)
-	fs.Updates = make(chan Update, 50)
+	fs.updates = make(chan Update, 50)
 	for i, j := range bind {
 		fs.paths[i] = j.Source
 		logger.Debugf("%v", fs.paths)
@@ -66,7 +66,7 @@ type Stat struct {
 }
 
 func (fs *Share) UpdateChannel() (c chan Update) {
-	return fs.Updates
+	return fs.updates
 }
 
 func (fs *Share) Watch(interval int) {
@@ -97,7 +97,7 @@ func (fs *Share) CheckChanges() {
 					NewHash: stat.Hash,
 					Stamp:   time.Now(),
 				}
-				fs.Updates <- update
+				fs.updates <- update
 				fs.watch[i] = stat.Hash
 				logger.Info("HASH has changed! %v", update)
 			}
