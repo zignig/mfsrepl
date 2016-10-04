@@ -31,6 +31,7 @@ func NewKeyStore(path string) (ks *KeyStore, err error) {
 	}
 	ks.makeBucket("private")
 	ks.makeBucket("public")
+	ks.makeBucket("keylist")
 	ks.keySets = make(map[string]*state)
 	return ks, nil
 }
