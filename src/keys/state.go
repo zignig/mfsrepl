@@ -37,12 +37,6 @@ func (st *state) String() string {
 	return s
 }
 
-func (st *state) get(fp string) (result *SignedKey) {
-	st.mtx.RLock()
-	defer st.mtx.RUnlock()
-	return st.set[fp]
-}
-
 func (st *state) insert(sigK *SignedKey) (state *state) {
 	st.mtx.RLock()
 	defer st.mtx.RUnlock()
@@ -80,21 +74,6 @@ func (st *state) Merge(other mesh.GossipData) (complete mesh.GossipData) {
 	return st.mergeComplete(other.(*state).copy().set)
 }
 
-// Merge the set into our state, abiding increment-only semantics.
-// Return a non-nil mesh.GossipData representation of the received set.
-func (st *state) mergeReceived(set map[string]*SignedKey) (received mesh.GossipData) {
-	st.mtx.Lock()
-	defer st.mtx.Unlock()
-
-	for peer, v := range set {
-		st.set[peer] = v
-	}
-
-	return &state{
-		set: set, // all remaining elements were novel to us
-	}
-}
-
 // Return any key/values that have been mutated, or nil if nothing changed.
 // TODO this needs to check sub keys
 func (st *state) mergeDelta(set map[string]*SignedKey) (delta mesh.GossipData) {
@@ -123,8 +102,6 @@ func (st *state) mergeDelta(set map[string]*SignedKey) (delta mesh.GossipData) {
 	}
 }
 
-// Merge the set into our state, abiding increment-only semantics.
-// Return our resulting, complete state.
 func (st *state) mergeComplete(set map[string]*SignedKey) (complete mesh.GossipData) {
 	st.mtx.Lock()
 	defer st.mtx.Unlock()

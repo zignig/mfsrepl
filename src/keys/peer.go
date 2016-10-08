@@ -5,7 +5,7 @@ import (
 
 	"bytes"
 	"encoding/gob"
-	"fmt"
+	//	"fmt"
 	"github.com/weaveworks/mesh"
 )
 
@@ -129,40 +129,13 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 			logger.Critical(err)
 		}
 	}
-	//delta = p.st.mergeDelta(set)
-	p.SpoolMerge(delta)
 	return delta, nil
 }
 
-func (p *peer) SpoolMerge(delta mesh.GossipData) {
-	//	if delta != nil {
-	//		for node, values := range delta.(*state).set {
-	//		}
-	//	}
-}
-
-// Merge the gossiped data represented by buf into our state.
-// Return the state information that was modified.
 func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.GossipData, err error) {
-	var set map[string]*SignedKey
-	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	received = p.st.mergeReceived(set)
-	p.SpoolMerge(received)
-	return received, nil
+	return nil, nil
 }
 
-// Merge the gossiped data represented by buf into our state.
 func (p *peer) OnGossipUnicast(src mesh.PeerName, buf []byte) error {
-	p.logger.Info(" unicast , %s", src)
-	var set map[string]*SignedKey
-	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
-		return err
-	}
-
-	complete := p.st.mergeComplete(set)
-	p.logger.Debug("OnGossipUnicast %s %v => complete %v", src, set, complete)
 	return nil
 }

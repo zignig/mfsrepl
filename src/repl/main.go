@@ -28,7 +28,7 @@ func main() {
 
 	config := LoadConfig(*configPath, *peer, *password, *nickname)
 	LogSetup(*level, "mfsrepl")
-	logging.SetLevel(logging.CRITICAL, "mfs")
+	logging.SetLevel(logging.DEBUG, "mfs")
 
 	logger := GetLogger("cluster")
 	logger.Critical("MFS replicator")
