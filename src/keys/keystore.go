@@ -3,10 +3,10 @@ package keys
 // manage and build key sets
 // boltdb store for keys
 import (
-	"crypto/rsa"
 	"errors"
-	//"fmt"
+	"fmt"
 	"github.com/boltdb/bolt"
+	"io/ioutil"
 	"sync"
 )
 
@@ -15,8 +15,9 @@ var (
 )
 
 type KeyStore struct {
-	db      *bolt.DB
-	private *rsa.PrivateKey
+	db   *bolt.DB
+	priv map[string]*StoredKey
+	path string
 
 	mapLock sync.Mutex
 	keySets map[string]*state // reuse state for key cache
@@ -25,7 +26,9 @@ type KeyStore struct {
 func NewKeyStore(path string) (ks *KeyStore, err error) {
 	logger.Criticalf("New Key Store %s", path)
 	ks = &KeyStore{}
-	ks.db, err = bolt.Open(path, 0600, nil)
+	ks.path = path
+	ks.initFolder()
+	ks.db, err = bolt.Open(path+"/keystore.db", 0600, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -34,6 +37,14 @@ func NewKeyStore(path string) (ks *KeyStore, err error) {
 	ks.makeBucket("keylist")
 	ks.keySets = make(map[string]*state)
 	return ks, nil
+}
+
+func (ks *KeyStore) initFolder() (err error) {
+	files, err := ioutil.ReadDir(ks.path)
+	for _, file := range files {
+		fmt.Println(file)
+	}
+	return
 }
 
 func (ks *KeyStore) makeBucket(bucket string) (err error) {

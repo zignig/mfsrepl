@@ -1,5 +1,5 @@
 pkg/
 bin/
 repl.toml
-src/keys/testing.db
+src/keys/keys/
 keystore.db

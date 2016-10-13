@@ -6,7 +6,7 @@ import (
 )
 
 func TestStore(t *testing.T) {
-	ks, err := NewKeyStore("./testing.db")
+	ks, err := NewKeyStore("keys")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -20,16 +20,16 @@ func TestStore(t *testing.T) {
 	//ks.Insert(k, "local")
 	//local, _ := ks.ListKeys("local")
 	//fmt.Println(local)
-	//blob, _ := k.MakeSigned()
+	blob, _ := k.MakeSigned()
 	//blob.Data[90] = 0x0FF
 	//err = blob.Check()
 	//if err == nil {
 	//	fmt.Println("Valid Sig BLOB")
 	//}
 	//fmt.Println(err)
-	//ks.PutPublic(blob, "public")
-	//public, _ := ks.ListKeys("public")
-	//fmt.Println(public)
+	ks.PutPublic(blob, "public")
+	public, _ := ks.ListKeys("public")
+	fmt.Println(public)
 	ks.Close()
 	t.Errorf("FAIL")
 
