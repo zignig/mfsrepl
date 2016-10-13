@@ -12,7 +12,7 @@ func TestStore(t *testing.T) {
 	}
 	k, err := ks.NewLocalKey()
 	fmt.Println(k, err)
-	k.Save("keys")
+	ks.Save(k)
 	//data, err := k.Encode()
 	//fmt.Println(data, err)
 	//rk, err := Decode(data)

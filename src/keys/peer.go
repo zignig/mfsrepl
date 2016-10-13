@@ -73,9 +73,12 @@ func (p *peer) loadAllKeys() {
 		logger.Critical(err)
 	}
 	for _, i := range keys {
-		logger.Debugf("Load Key %s", i)
-		k, _ := p.keyStore.GetPublic(i, "public")
-		//fmt.Println(k, e)
+		//logger.Debugf("Load Key %s", i)
+		k, err := p.keyStore.GetPublic(i, "public")
+		if err != nil {
+			logger.Errorf("KEY FAIL %v", err)
+			continue
+		}
 		p.st.insert(k)
 	}
 }
@@ -109,7 +112,7 @@ func (p *peer) stop() {
 // Return a copy of our complete state.
 // TODO , get a small random selection of keys
 func (p *peer) Gossip() (complete mesh.GossipData) {
-	logger.Critical("KEY GOSSIP")
+	//logger.Critical("KEY GOSSIP")
 	complete = p.st.copy()
 	//logger.Criticalf("data -> %v\n", complete.(*state).set)
 	return complete

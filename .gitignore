@@ -2,4 +2,4 @@ pkg/
 bin/
 repl.toml
 src/keys/keys/
-keystore.db
+keys/

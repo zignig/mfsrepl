@@ -16,7 +16,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 )
 
 const KeySize = 1024
@@ -168,14 +167,13 @@ func (ks *KeyStore) NewLocalKey() (lc *StoredKey, err error) {
 	return lc, nil
 }
 
-func (lc *StoredKey) Save(path string) (err error) {
-	err = os.Mkdir(path, 0700)
+func (ks *KeyStore) Save(lc *StoredKey) (err error) {
 	enc, err := json.MarshalIndent(lc, "", " ")
 	if err != nil {
 		return err
 	}
 	fp := lc.FingerPrint()
-	err = ioutil.WriteFile(path+string(os.PathSeparator)+fp+".key", enc, 0600)
+	err = ioutil.WriteFile(ks.path+"/private/"+fp+".key", enc, 0600)
 	if err != nil {
 		return err
 

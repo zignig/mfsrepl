@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"io/ioutil"
+	"os"
 	"sync"
 )
 
@@ -27,7 +28,11 @@ func NewKeyStore(path string) (ks *KeyStore, err error) {
 	logger.Criticalf("New Key Store %s", path)
 	ks = &KeyStore{}
 	ks.path = path
-	ks.initFolder()
+	err = ks.initFolder()
+	if err != nil {
+		logger.Errorf("Init fail %s", err)
+		return nil, err
+	}
 	ks.db, err = bolt.Open(path+"/keystore.db", 0600, nil)
 	if err != nil {
 		return nil, err
@@ -40,9 +45,31 @@ func NewKeyStore(path string) (ks *KeyStore, err error) {
 }
 
 func (ks *KeyStore) initFolder() (err error) {
-	files, err := ioutil.ReadDir(ks.path)
-	for _, file := range files {
-		fmt.Println(file)
+	_, err = os.Stat(ks.path)
+	private := ks.path + string(os.PathSeparator) + "private"
+	if os.IsNotExist(err) {
+		logger.Debug("Create Private Folder")
+		os.MkdirAll(private, 0600)
+	}
+	files, err := ioutil.ReadDir(private)
+	fmt.Println(len(files), err)
+	if len(files) == 0 {
+		logger.Debug("Generate Local Key")
+		k, err := ks.NewLocalKey()
+		if err != nil {
+			return err
+		}
+		ks.Save(k)
+		logger.Debug("Sign Public Key")
+		blob, err := k.MakeSigned()
+		if err != nil {
+			return err
+		}
+		logger.Debug("Insert into database")
+		err = ks.PutPublic(blob, "public")
+		if err != nil {
+			return err
+		}
 	}
 	return
 }
@@ -103,6 +130,7 @@ func (ks *KeyStore) CacheKey(fp string, bucket string) (sigK *SignedKey, have bo
 	// if not load it
 	sigK, err := ks.GetPublic(fp, bucket)
 	if err != nil {
+		logger.Errorf("KEY FAIL %v", err)
 		return nil, false
 	}
 	// put the key into the map

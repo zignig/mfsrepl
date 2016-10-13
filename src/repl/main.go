@@ -41,7 +41,7 @@ func main() {
 		cluster.Attach(refPeer, config.Channel)
 	}
 
-	keyPeer := keys.NewPeer("keystore.db", logger)
+	keyPeer := keys.NewPeer("keys", logger)
 	cluster.Attach(keyPeer, "keybase")
 	// Spin up the mesh
 	go func() {
