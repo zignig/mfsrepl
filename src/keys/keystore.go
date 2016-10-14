@@ -25,10 +25,10 @@ type KeyStore struct {
 }
 
 func NewKeyStore(path string) (ks *KeyStore, err error) {
-	logger.Criticalf("New Key Store %s", path)
+	logger.Infof("Open Key Store %s", path)
 	ks = &KeyStore{}
 	ks.path = path
-	err = ks.initFolder()
+	pubK, err := ks.initFolder()
 	if err != nil {
 		logger.Errorf("Init fail %s", err)
 		return nil, err
@@ -37,38 +37,43 @@ func NewKeyStore(path string) (ks *KeyStore, err error) {
 	if err != nil {
 		return nil, err
 	}
-	ks.makeBucket("private")
 	ks.makeBucket("public")
 	ks.makeBucket("keylist")
 	ks.keySets = make(map[string]*state)
+	// if new key insert
+	if pubK != nil {
+		ks.PutPublic(pubK, "public")
+	}
 	return ks, nil
 }
 
-func (ks *KeyStore) initFolder() (err error) {
+func (ks *KeyStore) initFolder() (sigK *SignedKey, err error) {
 	_, err = os.Stat(ks.path)
 	private := ks.path + string(os.PathSeparator) + "private"
 	if os.IsNotExist(err) {
-		logger.Debug("Create Private Folder")
-		os.MkdirAll(private, 0600)
+		logger.Critical("Create Key Store")
+		os.MkdirAll(private, 0700)
+	} else {
+		return nil, nil
 	}
+
 	files, err := ioutil.ReadDir(private)
 	fmt.Println(len(files), err)
 	if len(files) == 0 {
 		logger.Debug("Generate Local Key")
 		k, err := ks.NewLocalKey()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		ks.Save(k)
 		logger.Debug("Sign Public Key")
-		blob, err := k.MakeSigned()
+		sigK, err = k.MakeSigned()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		logger.Debug("Insert into database")
-		err = ks.PutPublic(blob, "public")
 		if err != nil {
-			return err
+			return sigK, err
 		}
 	}
 	return
@@ -192,27 +197,6 @@ func (ks *KeyStore) PutPublic(sigK *SignedKey, bucket string) error {
 			return err
 		}
 		err = bucket.Put([]byte(key), data)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return err
-}
-
-func (ks *KeyStore) Insert(s *StoredKey, bucket string) error {
-	err := ks.db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(bucket))
-		if err != nil {
-			return err
-		}
-		data, err := s.Encode()
-		if err != nil {
-			return err
-		}
-		// truncated sha of the public key
-		fp := s.FingerPrint()
-		err = bucket.Put([]byte(fp), data)
 		if err != nil {
 			return err
 		}
