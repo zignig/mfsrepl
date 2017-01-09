@@ -18,16 +18,17 @@ type peerAddrs map[string]*net.TCPAddr
 
 // ConnectionMaker initiates and manages connections to peers.
 type connectionMaker struct {
-	ourself     *localPeer
-	peers       *Peers
-	localAddr   string
-	port        int
-	discovery   bool
-	targets     map[string]*target
-	connections map[Connection]struct{}
-	directPeers peerAddrs
-	actionChan  chan<- connectionMakerAction
-	logger      Logger
+	ourself          *localPeer
+	peers            *Peers
+	localAddr        string
+	port             int
+	discovery        bool
+	targets          map[string]*target
+	connections      map[Connection]struct{}
+	directPeers      peerAddrs
+	terminationCount int
+	actionChan       chan<- connectionMakerAction
+	logger           Logger
 }
 
 // TargetState describes the connection state of a remote target.
@@ -133,7 +134,7 @@ func (cm *connectionMaker) ForgetConnections(peers []string) {
 		for _, peer := range peers {
 			delete(cm.directPeers, peer)
 		}
-		return false
+		return true
 	}
 }
 
@@ -145,9 +146,9 @@ func (cm *connectionMaker) Targets(activeOnly bool) []string {
 	resultChan := make(chan []string, 0)
 	cm.actionChan <- func() bool {
 		var slice []string
-		for peer := range cm.directPeers {
+		for peer, addr := range cm.directPeers {
 			if activeOnly {
-				if target, ok := cm.targets[peer]; ok && target.tryAfter.IsZero() {
+				if target, ok := cm.targets[cm.completeAddr(*addr)]; ok && target.tryAfter.IsZero() {
 					continue
 				}
 			}
@@ -189,6 +190,9 @@ func (cm *connectionMaker) connectionCreated(conn Connection) {
 // target identified by conn.RemoteTCPAddr() as Waiting.
 func (cm *connectionMaker) connectionTerminated(conn Connection, err error) {
 	cm.actionChan <- func() bool {
+		if err != errConnectToSelf {
+			cm.terminationCount++
+		}
 		delete(cm.connections, conn)
 		if conn.isOutbound() {
 			target := cm.targets[conn.remoteTCPAddress()]

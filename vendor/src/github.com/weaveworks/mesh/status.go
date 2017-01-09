@@ -20,6 +20,7 @@ type Status struct {
 	UnicastRoutes      []unicastRouteStatus
 	BroadcastRoutes    []broadcastRouteStatus
 	Connections        []LocalConnectionStatus
+	TerminationCount   int
 	Targets            []string
 	OverlayDiagnostics interface{}
 	TrustedSubnets     []string
@@ -40,6 +41,7 @@ func NewStatus(router *Router) *Status {
 		UnicastRoutes:      makeUnicastRouteStatusSlice(router.Routes),
 		BroadcastRoutes:    makeBroadcastRouteStatusSlice(router.Routes),
 		Connections:        makeLocalConnectionStatusSlice(router.ConnectionMaker),
+		TerminationCount:   router.ConnectionMaker.terminationCount,
 		Targets:            router.ConnectionMaker.Targets(false),
 		OverlayDiagnostics: router.Overlay.Diagnostics(),
 		TrustedSubnets:     makeTrustedSubnetsSlice(router.TrustedSubnets),
@@ -150,6 +152,7 @@ type LocalConnectionStatus struct {
 	Outbound bool
 	State    string
 	Info     string
+	Attrs    map[string]interface{}
 }
 
 // makeLocalConnectionStatusSlice takes a snapshot of the active local
@@ -164,7 +167,12 @@ func makeLocalConnectionStatusSlice(cm *connectionMaker) []LocalConnectionStatus
 				state = "established"
 			}
 			lc, _ := conn.(*LocalConnection)
-			info := fmt.Sprintf("%-6v %v", lc.OverlayConn.DisplayName(), conn.Remote())
+			attrs := lc.OverlayConn.Attrs()
+			name, ok := attrs["name"]
+			if !ok {
+				name = "none"
+			}
+			info := fmt.Sprintf("%-6v %v", name, conn.Remote())
 			if lc.router.usingPassword() {
 				if lc.untrusted() {
 					info = fmt.Sprintf("%-11v %v", "encrypted", info)
@@ -172,11 +180,11 @@ func makeLocalConnectionStatusSlice(cm *connectionMaker) []LocalConnectionStatus
 					info = fmt.Sprintf("%-11v %v", "unencrypted", info)
 				}
 			}
-			slice = append(slice, LocalConnectionStatus{conn.remoteTCPAddress(), conn.isOutbound(), state, info})
+			slice = append(slice, LocalConnectionStatus{conn.remoteTCPAddress(), conn.isOutbound(), state, info, attrs})
 		}
 		for address, target := range cm.targets {
 			add := func(state, info string) {
-				slice = append(slice, LocalConnectionStatus{address, true, state, info})
+				slice = append(slice, LocalConnectionStatus{address, true, state, info, nil})
 			}
 			switch target.state {
 			case targetWaiting:

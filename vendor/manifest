@@ -10,7 +10,7 @@
 		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
-			"revision": "fff57c100f4dea1905678da7e90d92429dff2904",
+			"revision": "a705895fdad108f053eae7ee011ed94a0541ee13",
 			"branch": "master"
 		},
 		{
@@ -22,41 +22,41 @@
 		{
 			"importpath": "github.com/weaveworks/mesh",
 			"repository": "https://github.com/weaveworks/mesh",
-			"revision": "50329b4166c9c7d4024470996fa55956902d7815",
+			"revision": "1d66d138554978f631b832e391a20ed9dbc92729",
 			"branch": "master"
 		},
 		{
 			"importpath": "golang.org/x/crypto/curve25519",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "84e98f45760e87786b7f24603b8166a6fa09811d",
+			"revision": "5b4074c2c416448b5d06e287167144493aabda43",
 			"branch": "master",
 			"path": "/curve25519"
 		},
 		{
 			"importpath": "golang.org/x/crypto/nacl/box",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "84e98f45760e87786b7f24603b8166a6fa09811d",
+			"revision": "5b4074c2c416448b5d06e287167144493aabda43",
 			"branch": "master",
 			"path": "/nacl/box"
 		},
 		{
 			"importpath": "golang.org/x/crypto/nacl/secretbox",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "84e98f45760e87786b7f24603b8166a6fa09811d",
+			"revision": "5b4074c2c416448b5d06e287167144493aabda43",
 			"branch": "master",
 			"path": "/nacl/secretbox"
 		},
 		{
 			"importpath": "golang.org/x/crypto/poly1305",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "84e98f45760e87786b7f24603b8166a6fa09811d",
+			"revision": "5b4074c2c416448b5d06e287167144493aabda43",
 			"branch": "master",
 			"path": "/poly1305"
 		},
 		{
 			"importpath": "golang.org/x/crypto/salsa20/salsa",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "84e98f45760e87786b7f24603b8166a6fa09811d",
+			"revision": "5b4074c2c416448b5d06e287167144493aabda43",
 			"branch": "master",
 			"path": "/salsa20/salsa"
 		}
