@@ -38,7 +38,7 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 	cl.Name = name
 	// log wrapper for mesh internal logger
 	wrap := NewLogWrap(logger)
-	router := mesh.NewRouter(mesh.Config{
+	router, err := mesh.NewRouter(mesh.Config{
 		Host:               host,
 		Port:               port,
 		ProtocolMinVersion: mesh.ProtocolMinVersion,
@@ -48,6 +48,9 @@ func NewCluster(config *Config, logger *logging.Logger) (cl *Cluster) {
 		TrustedSubnets:     []*net.IPNet{},
 	}, name, config.Nickname, mesh.NullOverlay{}, wrap) //log.New(ioutil.Discard, "", 0))
 	cl.router = router
+	if err != nil {
+		panic("mesh fail")
+	}
 
 	//peer := refshare.NewPeer(name, logger)
 	//gossip := router.NewGossip(config.Channel, peer)
@@ -65,7 +68,7 @@ type Widget interface {
 }
 
 func (cl *Cluster) Attach(widget Widget, channel string) {
-	gossip := cl.router.NewGossip(channel, widget)
+	gossip, _ := cl.router.NewGossip(channel, widget)
 	widget.Register(gossip)
 }
 
