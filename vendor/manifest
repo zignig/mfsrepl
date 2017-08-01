@@ -22,7 +22,7 @@
 		{
 			"importpath": "github.com/weaveworks/mesh",
 			"repository": "https://github.com/weaveworks/mesh",
-			"revision": "dc2e7af5ffd76e17b2d76fdbbc55a047aa6ec93c",
+			"revision": "38e8100dfbc7b28ae8ffde5a2bbeceec57ffa52a",
 			"branch": "master"
 		},
 		{
