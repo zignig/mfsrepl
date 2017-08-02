@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+    "time"
 )
 
 const KeySize = 1024
@@ -141,9 +142,12 @@ func (ks *KeyStore) NewLocalKey() (lc *StoredKey, err error) {
 	}
 	publicKey = &privateKey.PublicKey
 	//TODO, add some header stuff
+    head := make(map[string]string)
+    head["created"] = fmt.Sprintf("%s",time.Now())
 	privateKeyPEM := &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+        Headers: head,
 	}
 	pr := string(pem.EncodeToMemory(privateKeyPEM))
 
@@ -154,7 +158,7 @@ func (ks *KeyStore) NewLocalKey() (lc *StoredKey, err error) {
 	}
 	publicKeyBlock := pem.Block{
 		Type:    "PUBLIC KEY",
-		Headers: nil,
+		Headers: head,
 		Bytes:   publicKeyDER,
 	}
 	pb := string(pem.EncodeToMemory(&publicKeyBlock))

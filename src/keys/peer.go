@@ -14,9 +14,11 @@ import (
 // and the resulting Gossip registered in turn,
 // before calling mesh.Router.Start.
 var logger = logging.MustGetLogger("keys")
+const fullKeys = 5
 
 type peer struct {
 	st       *state
+    countdown int // every fullKeys send the whole keyset
 	send     mesh.Gossip
 	actions  chan<- func()
 	quit     chan struct{}
@@ -35,6 +37,7 @@ func NewPeer(keypath string, logger *logging.Logger) *peer {
 	p := &peer{
 		st:      newState(),
 		send:    nil, // must .register() later
+        countdown: fullKeys,
 		actions: actions,
 		quit:    make(chan struct{}),
 		//update:  make(chan ident, 10),
@@ -114,7 +117,15 @@ func (p *peer) stop() {
 // TODO , get a small random selection of keys
 func (p *peer) Gossip() (complete mesh.GossipData) {
 	//logger.Critical("KEY GOSSIP")
+    logger.Critical(p.countdown)
+    p.countdown--
+    if p.countdown <= 0{
+        logger.Info("FULL COPY")
+        complete = p.st.copy()
+        p.countdown = fullKeys
+    } else {
 	complete = p.st.GetRand(5)
+    }
 	//logger.Criticalf("data -> %v\n", complete.(*state).set)
 	return complete
 }
@@ -122,18 +133,25 @@ func (p *peer) Gossip() (complete mesh.GossipData) {
 // Merge the gossiped data represented by buf into our state.
 // Return the state information that was modified.
 func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
-	var set map[string]*SignedKey
+    st := newState()
+    var set map[string]*SignedKey
 	if err := gob.NewDecoder(bytes.NewReader(buf)).Decode(&set); err != nil {
 		return nil, err
 	}
 	for i, j := range set {
+        //logger.Debug("key -> ",i)
 		if p.keyStore.HaveKey(i, "public") == false {
 			logger.Criticalf("ADDING KEY %v", i)
 			err := p.keyStore.TryInsert(j, "public")
 			logger.Critical(err)
+            st.insert(j)
 		}
 	}
-	return delta, nil
+    if len(st.set) == 0 {
+        return nil,nil
+    }
+    logger.Debug(st)
+	return st, nil
 }
 
 func (p *peer) OnGossipBroadcast(src mesh.PeerName, buf []byte) (received mesh.GossipData, err error) {

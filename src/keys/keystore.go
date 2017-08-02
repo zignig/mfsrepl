@@ -135,7 +135,7 @@ func (ks *KeyStore) CacheKey(fp string, bucket string) (sigK *SignedKey, have bo
 	// if not load it
 	sigK, err := ks.GetPublic(fp, bucket)
 	if err != nil {
-		logger.Errorf("KEY FAIL %v", err)
+		//logger.Errorf("KEY FAIL %v", err)
 		return nil, false
 	}
 	// put the key into the map
