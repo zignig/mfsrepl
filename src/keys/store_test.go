@@ -5,7 +5,15 @@ import (
 	"testing"
 )
 
-func TestStore(t *testing.T) {
+
+func TestPeer( t *testing.T ){
+    p := NewPeer("keys",logger)
+    r := p.st.GetRand(5)
+    fmt.Println("rand",r)
+	t.Errorf("FAIL")
+}
+
+func testStore(t *testing.T) {
 	ks, err := NewKeyStore("keys")
 	if err != nil {
 		fmt.Println(err)
@@ -30,6 +38,8 @@ func TestStore(t *testing.T) {
 	ks.PutPublic(blob, "public")
 	public, _ := ks.ListKeys("public")
 	fmt.Println(public)
+    list,err := ks.ListKeys("public")
+    fmt.Println(list,err)
 	ks.Close()
 	t.Errorf("FAIL")
 

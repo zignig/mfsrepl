@@ -8,6 +8,8 @@ import (
 
 	"github.com/op/go-logging"
 	"github.com/weaveworks/mesh"
+    "crypto/rand"
+    "math/big"
 )
 
 var log = logging.MustGetLogger("keyset")
@@ -68,6 +70,25 @@ func (st *state) Encode() [][]byte {
 	return [][]byte{buf.Bytes()}
 }
 
+func (st *state)GetRand(count int) (partial mesh.GossipData){
+    if len(st.set) == 0{
+        return nil
+    }
+    newSt := newState()
+    var keys []string
+    for i,_ := range st.set{
+        keys = append(keys,i)
+    }
+    for i := 0 ; i< count ; i++ {
+        z,err := rand.Int(rand.Reader,big.NewInt(int64(len(st.set))))
+        if err != nil {
+            panic("CRYPTO FAIL")
+        }
+        k := keys[z.Int64()]
+        newSt.insert(st.set[k])
+    }
+    return newSt
+}
 // Merge merges the other GossipData into this one,
 // and returns our resulting, complete state.
 func (st *state) Merge(other mesh.GossipData) (complete mesh.GossipData) {
