@@ -92,7 +92,7 @@ func (ks *KeyStore) Close() {
 }
 
 func (ks *KeyStore) TryInsert(sigK *SignedKey, bucket string) (err error) {
-	logger.Critical(ks)
+	//logger.Critical(ks)
 	err = sigK.Check()
 	if err != nil {
 		return err

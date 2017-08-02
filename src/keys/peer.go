@@ -116,15 +116,15 @@ func (p *peer) stop() {
 // Return a copy of our complete state.
 // TODO , get a small random selection of keys
 func (p *peer) Gossip() (complete mesh.GossipData) {
-	//logger.Critical("KEY GOSSIP")
-    logger.Critical(p.countdown)
+	logger.Critical("KEY GOSSIP")
+    //logger.Critical(p.countdown)
     p.countdown--
     if p.countdown <= 0{
-        logger.Info("FULL COPY")
-        complete = p.st.copy()
+        logger.Info("BIG COPY")
+        complete = p.st.GetRand(60)
         p.countdown = fullKeys
     } else {
-	complete = p.st.GetRand(5)
+	complete = p.st.GetRand(20)
     }
 	//logger.Criticalf("data -> %v\n", complete.(*state).set)
 	return complete
@@ -143,14 +143,17 @@ func (p *peer) OnGossip(buf []byte) (delta mesh.GossipData, err error) {
 		if p.keyStore.HaveKey(i, "public") == false {
 			logger.Criticalf("ADDING KEY %v", i)
 			err := p.keyStore.TryInsert(j, "public")
+            if err != nil {
 			logger.Critical(err)
+            }
             st.insert(j)
+            logger.Criticalf("# keys %d",len(p.st.set))
 		}
 	}
     if len(st.set) == 0 {
         return nil,nil
     }
-    logger.Debug(st)
+    //logger.Debug(st)
 	return st, nil
 }
 
