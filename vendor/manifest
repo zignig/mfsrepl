@@ -28,35 +28,35 @@
 		{
 			"importpath": "golang.org/x/crypto/curve25519",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "558b6879de74bc843225cde5686419267ff707ca",
+			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
 			"branch": "master",
 			"path": "/curve25519"
 		},
 		{
 			"importpath": "golang.org/x/crypto/nacl/box",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "558b6879de74bc843225cde5686419267ff707ca",
+			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
 			"branch": "master",
 			"path": "/nacl/box"
 		},
 		{
 			"importpath": "golang.org/x/crypto/nacl/secretbox",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "558b6879de74bc843225cde5686419267ff707ca",
+			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
 			"branch": "master",
 			"path": "/nacl/secretbox"
 		},
 		{
 			"importpath": "golang.org/x/crypto/poly1305",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "558b6879de74bc843225cde5686419267ff707ca",
+			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
 			"branch": "master",
 			"path": "/poly1305"
 		},
 		{
 			"importpath": "golang.org/x/crypto/salsa20/salsa",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "558b6879de74bc843225cde5686419267ff707ca",
+			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
 			"branch": "master",
 			"path": "/salsa20/salsa"
 		}
