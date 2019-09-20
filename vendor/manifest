@@ -4,13 +4,13 @@
 		{
 			"importpath": "github.com/BurntSushi/toml",
 			"repository": "https://github.com/BurntSushi/toml",
-			"revision": "a368813c5e648fee92e5f6c30e3944ff9d5e8895",
+			"revision": "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
-			"revision": "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8",
+			"revision": "fd01fc79c553a8e99d512a07e8e0c63d4a3ccfc5",
 			"branch": "master"
 		},
 		{
@@ -22,41 +22,48 @@
 		{
 			"importpath": "github.com/weaveworks/mesh",
 			"repository": "https://github.com/weaveworks/mesh",
-			"revision": "38e8100dfbc7b28ae8ffde5a2bbeceec57ffa52a",
+			"revision": "b7aea39ecc405bc9a791f96312eca9fd0f328513",
 			"branch": "master"
 		},
 		{
 			"importpath": "golang.org/x/crypto/curve25519",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
+			"revision": "227b76d455e791cb042b03e633e2f7fbcfdf74a5",
 			"branch": "master",
 			"path": "/curve25519"
 		},
 		{
+			"importpath": "golang.org/x/crypto/internal/subtle",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "227b76d455e791cb042b03e633e2f7fbcfdf74a5",
+			"branch": "master",
+			"path": "/internal/subtle"
+		},
+		{
 			"importpath": "golang.org/x/crypto/nacl/box",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
+			"revision": "227b76d455e791cb042b03e633e2f7fbcfdf74a5",
 			"branch": "master",
 			"path": "/nacl/box"
 		},
 		{
 			"importpath": "golang.org/x/crypto/nacl/secretbox",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
+			"revision": "227b76d455e791cb042b03e633e2f7fbcfdf74a5",
 			"branch": "master",
 			"path": "/nacl/secretbox"
 		},
 		{
 			"importpath": "golang.org/x/crypto/poly1305",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
+			"revision": "227b76d455e791cb042b03e633e2f7fbcfdf74a5",
 			"branch": "master",
 			"path": "/poly1305"
 		},
 		{
 			"importpath": "golang.org/x/crypto/salsa20/salsa",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "81db3efc71b576a04b145ca576c0bb9c0fb74d4f",
+			"revision": "227b76d455e791cb042b03e633e2f7fbcfdf74a5",
 			"branch": "master",
 			"path": "/salsa20/salsa"
 		}

@@ -82,15 +82,15 @@ func (peer *localPeer) createConnection(localAddr string, peerAddr string, accep
 	if err := peer.checkConnectionLimit(); err != nil {
 		return err
 	}
-	localTCPAddr, err := net.ResolveTCPAddr("tcp4", localAddr)
+	localTCPAddr, err := net.ResolveTCPAddr("tcp", localAddr)
 	if err != nil {
 		return err
 	}
-	remoteTCPAddr, err := net.ResolveTCPAddr("tcp4", peerAddr)
+	remoteTCPAddr, err := net.ResolveTCPAddr("tcp", peerAddr)
 	if err != nil {
 		return err
 	}
-	tcpConn, err := net.DialTCP("tcp4", localTCPAddr, remoteTCPAddr)
+	tcpConn, err := net.DialTCP("tcp", localTCPAddr, remoteTCPAddr)
 	if err != nil {
 		return err
 	}
@@ -136,6 +136,10 @@ func (peer *localPeer) encode(enc *gob.Encoder) {
 // ACTOR server
 
 func (peer *localPeer) actorLoop(actionChan <-chan localPeerAction) {
+	gossipInterval := defaultGossipInterval
+	if peer.router != nil {
+		gossipInterval = peer.router.gossipInterval()
+	}
 	gossipTimer := time.Tick(gossipInterval)
 	for {
 		select {
